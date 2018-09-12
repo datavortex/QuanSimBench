@@ -6,7 +6,7 @@ Verify that you get the "Pass=yes" result on all rows.
 
 2- Submit the following fields in a text file to santiago.betelu@datavortex.com 
 - Institution
-- Computer details: name, number of nodes, CPU name, physical cores per node, network
+- Computer details: name, number of nodes, CPU name, physical cores per node used, total physical cores used, network
 - Qubits (as said before, for which states/s is largest) 
 - Rawtime 
 - States/s 
@@ -16,7 +16,7 @@ Verify that you get the "Pass=yes" result on all rows.
 
 Example:
 - Santiago Betelu, UNT
-- UT's Stampede2, 256 nodes, Knight's Landing 68 cores, Infiniband network
+- UT's Stampede2, 256 nodes, Knight's Landing 64 cores used, total cores 16384, Infiniband network
 - Qubits: 41
 - States/s: 4.4e11
 - States/s/core: 2.7e7
