@@ -25,7 +25,7 @@ Example:
 - Santiago Betelu, UNT
 - UT's Stampede2
 - Xeon Phi 7250
-- Infiniband network
+- Fdr Infiniband network
 - 96GB/node
 - 2018
 - 256 nodes used
