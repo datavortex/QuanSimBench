@@ -10,6 +10,7 @@ C) Select the row with the highest performance and submit the following fields i
 - CPU name
 - Network type
 - Memory per node
+- Year
 - Number of nodes used (from batch file)
 - Physical cores per node used 
 - Total physical cores used (from batch file)
@@ -27,6 +28,7 @@ Example:
 - Xeon Phi 7250
 - Infiniband network
 - 96GB/node
+- 2018
 - 256 nodes used
 - 64 cores used
 - total cores 16384
