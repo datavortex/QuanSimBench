@@ -1,0 +1,23 @@
+Please test your computer as follows:
+
+1- First run the benchmark until you get the highest performance in the column "States/s". That usually corresponds to the 
+largest number of nodes, or to the largest number of qubits that you can simulate (column Qubits). 
+Verify that you get the "Pass=yes" result on all rows.
+
+2- Submit the following fields in a text file to santiago.betelu@datavortex.com 
+- Institution
+- Computer details: name, number of nodes, CPU name, physical cores per node, network
+- Qubits (as said before, for which states/s is largest) 
+- Rawtime 
+- States/s 
+- States/s/core
+- Power usage (if known)
+
+
+Example:
+- Santiago Betelu, UNT
+- UT's Stampede2, 256 nodes, Knight's Landing 68 cores, Infiniband network
+- Qubits: 41
+- States/s: 4.4e11
+- States/s/core: 2.7e7
+- Power usage unknown
