@@ -1,2 +1,2 @@
 "Name/Institution","Computer/vendor","Year","CPU","Network","Memory/node(GB)","Nodes used","Cores/node","Total cores","Qubits","States/s","States/s/core","Power(W)"
-S. Betelu UNT,      Stampede 2,       2018,  Xeon Phi 7250, IB,     96,    256,         64,            16384,         41,       4.4e11,     2.7e7,           unknown           
+S. Betelu UNT,      Stampede 2,       2018,  Xeon Phi 7250, FDR IB,     96,    256,         64,            16384,         41,       4.4e11,     2.7e7,           unknown           
