@@ -18,10 +18,11 @@ sbatch quansimbench.batch
 You may want to add optimization flags for your architecture
 
 ## Batch file quansimbench.batch
+The number of nodes and number of cores must be a power of two:
 ```
 #SBATCH –o outputfile-%J
-#SBATCH --nodes=8     # 8 nodes
-#SBATCH –n 256        # 64 cores per node
+#SBATCH --nodes=8     # 8 nodes (must be a power of 2)
+#SBATCH –n 256        # 64 cores per node (must be a power of 2)
 #SBATCH –p normal     # what queue
 #SBATCH –t 02:00:00   # usually less than 3 hours
 ibrun ./quansimbench
