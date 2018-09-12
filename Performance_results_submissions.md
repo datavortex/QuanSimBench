@@ -20,7 +20,8 @@ Verify that you get the "Pass=yes" result on all rows.
 - Power usage (if known)
 - Attach a text file "output.txt" with the output of the program.
 
-Example:```
+Example:
+```
 - Santiago Betelu, UNT
 - UT's Stampede2
 - Xeon Phi 7250
