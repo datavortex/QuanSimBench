@@ -8,7 +8,7 @@
 - Runs in a reasonable time: 1-3 hours
 - Portable with less than 300 lines of C and MPI
 - It just runs: no input or special knowledge from user
-- Runs from a laptop to a large supercomputer
+- This reference implementation runs from a laptop to a large supercomputer
 
 ## How to compile
 ```
@@ -19,10 +19,10 @@ You may want to add optimization flags for your architecture
 
 ## Batch file quansimbench.batch
 ```
-#SBATCH –o outputfile
+#SBATCH –o outputfile-%J
 #SBATCH --nodes=8     # 8 nodes
 #SBATCH –n 256        # 64 cores per node
-#SBATCH –p normal     # for KNL processors
+#SBATCH –p normal     # what queue
 #SBATCH –t 02:00:00   # usually less than 3 hours
 ibrun ./quansimbench
 ```
