@@ -1,7 +1,7 @@
 # quansimbench
 Quantum factorization simulation as a benchmark for HPC
 
-#Why quantum factorization as a benchmark
+# Why quantum factorization as a benchmark
 - Quantum factorization a widely known & relevant problem
 - Easy to validate and understand
 - Each additional qubit doubles RAM usage, CPU power and internode communication: good to test large machines
