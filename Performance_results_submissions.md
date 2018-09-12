@@ -15,7 +15,6 @@ C) Select the row with the highest performance and submit the following fields i
 - Physical cores per node used 
 - Total physical cores used (from batch file)
 - Qubits (as said before, for which states/s is largest) 
-- Rawtime 
 - States/s 
 - States/s/core
 - Power usage (if known)
