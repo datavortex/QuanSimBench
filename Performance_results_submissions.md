@@ -1,9 +1,10 @@
 ### Please test your computer as follows:
 
- [] First run the benchmark with the largest number of nodes/cores until you get the highest performance in the column "States/s". That usually corresponds to the largest number of qubits that you can simulate (column Qubits). 
- [] Verify that you get the "Pass=yes" result on all rows.
+A) First run the benchmark with the largest number of nodes/cores until you get the highest performance in the column "States/s". That usually corresponds to the largest number of qubits that you can simulate (column Qubits). 
 
- [] Select the row with the highest performance and submit the following fields in a text file to santiago.betelu@datavortex.com 
+B) Verify that you get the "Pass=yes" result on all rows.
+
+C) Select the row with the highest performance and submit the following fields in a text file to santiago.betelu@datavortex.com 
 - Your name & institution
 - Computer name
 - CPU name
