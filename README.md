@@ -16,9 +16,9 @@ Quantum factorization simulation as a benchmark for HPC
 
 Batch file quansimbench.batch
 
-#SBATCH –o outputfile
-#SBATCH --nodes=8     # 8 nodes
-#SBATCH –n 256        # 64 cores per node
-#SBATCH –p normal     # for KNL processors
-#SBATCH –t 02:00:00   # usually less than 3 hours
-ibrun ./quansimbench
+>#SBATCH –o outputfile
+>#SBATCH --nodes=8     # 8 nodes
+>#SBATCH –n 256        # 64 cores per node
+>#SBATCH –p normal     # for KNL processors
+>#SBATCH –t 02:00:00   # usually less than 3 hours
+>ibrun ./quansimbench
