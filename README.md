@@ -9,3 +9,16 @@ Quantum factorization simulation as a benchmark for HPC
 - Portable with less than 300 lines of C and MPI
 - It just runs: no input or special knowledge from user
 - Runs from a laptop to a large supercomputer
+
+#How to compile
+> mpicc -Ofast quansimbench.c -o quansimbench -lm -Wall
+> sbatch quansimbench.batch
+
+Batch file quansimbench.batch
+
+#SBATCH –o outputfile
+#SBATCH --nodes=8     # 8 nodes
+#SBATCH –n 256        # 64 cores per node
+#SBATCH –p normal     # for KNL processors
+#SBATCH –t 02:00:00   # usually less than 3 hours
+ibrun ./quansimbench
