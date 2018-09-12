@@ -11,7 +11,9 @@ Quantum factorization simulation as a benchmark for HPC
 - Runs from a laptop to a large supercomputer
 
 ## How to compile
+
 mpicc -Ofast quansimbench.c -o quansimbench -lm -Wall
+
 sbatch quansimbench.batch
 
 You may want to add optimization flags for your architecture
