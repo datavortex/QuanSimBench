@@ -4,7 +4,10 @@ A) First run the benchmark with increasing number of nodes/cores until you get t
 
 B) Verify that you get the "Pass=yes" result on all rows.
 
-C) Select the row with the highest performance and submit the following fields in a text file to santiago.betelu@datavortex.com 
+C) Select the row with the highest performance and submit your results to https://docs.google.com/forms/d/e/1FAIpQLSeVwp_4FZJWyS5UsfBrtxq8PXkKJLoRvgHkpfTuOuJ-wcudiw/viewform?usp=sf_link
+
+
+the following fields in a text file to santiago.betelu@datavortex.com 
 - Your name & institution
 - Computer name and vendor
 - CPU name
