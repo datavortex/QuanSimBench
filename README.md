@@ -1,4 +1,4 @@
-# quansimbench
+# QuanSimBench
 Quantum factorization simulation as a benchmark for HPC
 
 # Why quantum factorization as a benchmark
