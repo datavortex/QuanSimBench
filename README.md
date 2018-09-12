@@ -10,6 +10,8 @@ Quantum factorization simulation as a benchmark for HPC
 - It just runs: no input or special knowledge from user
 - Runs from a laptop to a large supercomputer
 
+Serious formatting problems below:
+
 #How to compile
 > mpicc -Ofast quansimbench.c -o quansimbench -lm -Wall
 > sbatch quansimbench.batch
