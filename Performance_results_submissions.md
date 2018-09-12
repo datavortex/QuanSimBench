@@ -6,7 +6,7 @@ B) Verify that you get the "Pass=yes" result on all rows.
 
 C) Select the row with the highest performance and submit the following fields in a text file to santiago.betelu@datavortex.com 
 - Your name & institution
-- Computer name
+- Computer name and vendor
 - CPU name
 - Network type
 - Memory per node
