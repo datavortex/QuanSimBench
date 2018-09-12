@@ -16,7 +16,7 @@ Verify that you get the "Pass=yes" result on all rows.
 
 Example:
 - Santiago Betelu, UNT
-- UT's Stampede2, 256 nodes, Knight's Landing 64 cores used, total cores 16384, Infiniband network
+- UT's Stampede2, 256 nodes, Xeon Phi 7250, 64 cores used, total cores 16384, Infiniband network
 - Qubits: 41
 - States/s: 4.4e11
 - States/s/core: 2.7e7
