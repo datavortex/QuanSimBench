@@ -1,7 +1,7 @@
 # QuanSimBench
 Quantum factorization simulation as a benchmark for HPC
 
-# Why quantum factorization as a benchmark
+## Why quantum factorization as a benchmark
 - Quantum factorization a widely known & relevant problem
 - Easy to validate and understand the results
 - Each additional qubit doubles RAM usage, CPU power and internode communication: good to test large machines
@@ -10,13 +10,13 @@ Quantum factorization simulation as a benchmark for HPC
 - It just runs: no input or special knowledge from user
 - Runs from a laptop to a large supercomputer
 
-Serious formatting problems below:
-
-# How to compile
+## How to compile
 mpicc -Ofast quansimbench.c -o quansimbench -lm -Wall
 sbatch quansimbench.batch
 
-Batch file quansimbench.batch
+You may want to add optimization flags for your architecture
+
+## Batch file quansimbench.batch
 ```
 #SBATCH –o outputfile
 #SBATCH --nodes=8     # 8 nodes
