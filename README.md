@@ -5,7 +5,7 @@
 - The goal is to quantify the ability of a computer to simulate ideal quantum circuits
 - Easy to validate and understand the results
 - Each additional qubit doubles RAM usage, CPU power and internode communication: good to test large machines
-- Runs in a reasonable time: 30'-3 hours
+- Runs in a reasonable time: 1/2 - 3 hours
 - Portable with less than 300 lines of C and MPI
 - It just runs: no input or special knowledge from user
 - This reference implementation runs from a laptop to a large supercomputer
