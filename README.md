@@ -2,16 +2,16 @@
 
 - A gate-by-gate simulation of a quantum computer with a full state vector formulation. 
 - It simulates a simplified version of Shor's algorithm with increasing number of qubits Q until resources are exhausted 
-- The score (states/s) is based on how fast the Approximate Quantum Fourier Transform is computed.  
+- The score (states/s) is how fast the Approximate Quantum Fourier Transform can be computed.  
 - The goal is to quantify the ability of a computer to simulate ideal quantum circuits.
 
 ## Why quantum factorization simulation as a benchmark for HPC
 - Quantum factorization a widely known & relevant problem
-- Easy to validate and understand the results
 - Each additional qubit doubles RAM usage, CPU power and internode communication: good to test large machines
+- The output is easy to validate and understand
 - Runs in a reasonable time: 1/2 - 3 hours
-- Portable with less than ~300 lines of C and MPI, few dependencies
-- It just runs: no input or special knowledge from user
+- Portable with less than ~300 lines of C and MPI, very few dependencies
+- It just runs: no input or specialized knowledge from user.
 - This reference implementation runs from a laptop to a large supercomputer
 
 ## How to compile
