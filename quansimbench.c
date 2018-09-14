@@ -1,19 +1,19 @@
-/////////////////////////////////////////////////////////////////////////////          
+/////////////////////////////////////////////////////////////////////////////
 //  Quantum Factorization Simulation as a Benchmark for HPC
-//  Verifies that the area under the peaks of the Quantum Fourier Transform 
-//  of delta(2^x mod n,1) is larger than 1/2, where n=p*q is the 
+//  Verifies that the area under the peaks of the Quantum Fourier Transform
+//  of delta(2^x mod n,1) is larger than 1/2, where n=p*q is the
 //  largest integer that satisfies n^2<=2^QUBITS<2n^2 and maximises (p-1)*(q-1), p<q.
 //  It is a simplification of Shor's factorization algorithm
-//  Santiago Ignacio Betelu, Denton 2018                       
+//  Santiago Ignacio Betelu, Denton 2018
 //  mpicc -Ofast quansimbench.c -o quansimbench -lm -Wall
 //  sbatch quansimbench.batch
-//    _______                    ______ _       ______                    _     
-//   (_______)                  / _____|_)     (____  \                  | |    
-//    _    _  _   _ _____ ____ ( (____  _ ____  ____)  )_____ ____   ____| |__  
-//   | |  | || | | (____ |  _ \ \____ \| |    \|  __  (| ___ |  _ \ / ___)  _ | 
+//    _______                    ______ _       ______                    _
+//   (_______)                  / _____|_)     (____  \                  | |
+//    _    _  _   _ _____ ____ ( (____  _ ____  ____)  )_____ ____   ____| |__
+//   | |  | || | | (____ |  _ \ \____ \| |    \|  __  (| ___ |  _ \ / ___)  _ |
 //   | |__| || |_| / ___ | | | |_____) ) | | | | |__)  ) ____| | | ( (___| | | |
 //    \______)____/\_____|_| |_(______/|_|_|_|_|______/|_____)_| |_|\____)_| |_|
-//                                                                           
+//
 ////////////////////////////////////////////////////////////////////////////////
 #include <stdio.h>
 #include <string.h>
@@ -24,6 +24,7 @@
 #include <mpi.h>
 #include <time.h>
 
+#define VERSION "1.0"
 #define pi 3.141592653589793
 
 float complex *c, *buffer; // quantum amplitudes
@@ -56,7 +57,7 @@ int64_t QUBITS,N,BUFFERSIZE,NBUFFERS,NODEBITS,nnodes,inode;
 //  H= | 1  1 |
 //     | 1 -1 | /sqrt(2)
 void H(int64_t qubit){  // Hadamard gate acting on qubit
-    int64_t x,y,mask1,mask2,q,chunk; 
+    int64_t x,y,mask1,mask2,q,chunk;
     int node,b,tag;
     float complex aux;
     MPI_Status st;
@@ -97,7 +98,7 @@ void H(int64_t qubit){  // Hadamard gate acting on qubit
          }
        }
     }
-    return; 
+    return;
 }
 //////////////////////////////////////////////////////////////////////////////
 void SWAP(int64_t qubit1, int64_t qubit2){  // SWAP between qubit1 and qubit2, qubit1!=quibit2
@@ -204,7 +205,7 @@ int64_t min(int64_t x, int64_t y){
    if(x<y) return(x);
    else return(y);
 }
-//  (a^b) mod n 
+//  (a^b) mod n
 int64_t powmod(int64_t a, int64_t b, int64_t n){
     int64_t xq=1,yq=a; // avoid overflow of intermediate results
     while(b>0){
@@ -219,9 +220,9 @@ int main(int argc, char **argv){
    int64_t x,aux,nphase,n,l,mulperiod,peaknumber,z,q,numstates,npeaks,predictedx;
    struct timespec tim0,tim1;
    double timeperstate,timeqft,s,s0,prob,prob0,peakspacing;
-   char texfactors[32],texmessage[32];
+   char texfactors[32];
 
-   // largest integers that can be factored with Shor's algoritm with register size 'qubits' 
+   // largest integers that can be factored with Shor's algoritm with register size 'qubits'
    // n[qubits]= factor1[qubits]*factor2[qubits]   2^qubits < n^2 < 2^{qubits+1}
    int64_t factor1[61]={0,0,0,0,0,  0,0,0, 0,3, 3, 3, 5, 7, 7, 7, 11, 11, 17, 23, 19, 23, 23, 43, 61, 53, 79, 71, 83, 101, 137, 149, 233, 211, 283, 241, 503, 389, 557, 859, 911, 1039, 1399, 1669, 1787, 2039, 2357, 2609, 4093, 3709, 5471, 5503, 8011, 8537, 11119, 12757, 12941, 17837, 22717, 24847, 28579};
 
@@ -239,34 +240,35 @@ int main(int argc, char **argv){
       exit(1);
    }
    if(inode==0){
-       fprintf(stderr,"Version:1.0     cores:%lu\n",nnodes);
-       fprintf(stderr,"Qubits  Factors    probability   rawtime  states/s  states/s/core    pass\n"); 
+       printf("Quansimbench version %s\n",VERSION);
+       printf("Ranks: %lu\n\n", nnodes);
+       printf("Qubits      Factors    Probability         Time    States/s  States/s/rank  Pass\n");
    }
 
    // iterate over number of qubits
-   for(QUBITS=9; QUBITS<=60; QUBITS++){ // 9 is minimum qubits for this test 
- 
+   for(QUBITS=9; QUBITS<=60; QUBITS++){ // 9 is minimum qubits for this test
+
        N= (1ll<<QUBITS); // state vector size
-       if( N<nnodes) goto next;  // too many nodes for small N 
-         
+       if( N<nnodes) goto next;  // too many nodes for small N
+
        BUFFERSIZE= (1ll<<18);  // number of complex numbers used in chunk of communication
        NBUFFERS=4; // must be a power of 2 to simplify code, and <=1024 (which is too large)
-       if( NBUFFERS> N/nnodes/BUFFERSIZE ) NBUFFERS= N/nnodes/BUFFERSIZE; 
-       if( NBUFFERS<1 ) NBUFFERS=1; 
+       if( NBUFFERS> N/nnodes/BUFFERSIZE ) NBUFFERS= N/nnodes/BUFFERSIZE;
+       if( NBUFFERS<1 ) NBUFFERS=1;
        if(BUFFERSIZE>N/nnodes/NBUFFERS) BUFFERSIZE=N/nnodes/NBUFFERS;
        if( N%(nnodes*BUFFERSIZE*NBUFFERS)!=0){
           fprintf(stderr,"ERROR: nnodes*BUFFERSIZE must divide N %lu \n",nnodes*BUFFERSIZE*NBUFFERS);
           goto fin;
        }
 
-       c=realloc(c, (N/nnodes)*sizeof(complex float) );             // re-allocate double float amplitudes 
+       c=realloc(c, (N/nnodes)*sizeof(complex float) );             // re-allocate double float amplitudes
        if( c==NULL ){
           if(inode==0) fprintf(stderr,"ALLOCATION ERROR node %d",(int)inode);
           exit(777);
           goto fin;
        }
        buffer=realloc(buffer, NBUFFERS*BUFFERSIZE*sizeof(complex float));    // for communication
-       
+
        n= factor1[QUBITS]*factor2[QUBITS]; // number to factor
        mulperiod= (factor1[QUBITS]-1)*(factor2[QUBITS]-1); // Euler totient function is multiple of period of (2^x mod n)
        peakspacing= 1.0*N/mulperiod; // so the space between peaks in the spectrum is a multiple of this
@@ -293,7 +295,7 @@ int main(int argc, char **argv){
 
        nphase= 1+log2(1.0*QUBITS);   // number of phases each step of Approximate Quantum Fourier Transform
        clock_gettime(CLOCK_REALTIME,&tim0);  // only time AQFT
-       // the Approximate Quantum Fourier Transform 
+       // the Approximate Quantum Fourier Transform
        numstates=0;
        for(q=QUBITS-1;q>=0; q--){
             H(q);
@@ -314,21 +316,19 @@ int main(int argc, char **argv){
        prob0=0.0;
        npeaks= mulperiod;
        for(peaknumber= inode*npeaks/nnodes; peaknumber<=(inode+1)*npeaks/nnodes; peaknumber++){  // note that this lists << N peaks
-           if(peaknumber>0) { 
+           if(peaknumber>0) {
                predictedx= peaknumber*peakspacing +0.5; // state number x where a peak may occur, add 0.5 to round to nearest
                z= predictedx -N/nnodes*inode;           // convert to int and reduce to interval in this node
-               if(z>=0 && z<N/nnodes) prob0=prob0+cabsf(c[z]*conjf(c[z]));  // resulting area under theoretical peaknumber 
+               if(z>=0 && z<N/nnodes) prob0=prob0+cabsf(c[z]*conjf(c[z]));  // resulting area under theoretical peaknumber
            }
        }
        MPI_Allreduce(&prob0,&prob, 1,MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
        if(inode==0){
            sprintf(texfactors,"%lu*%lu",factor1[QUBITS], factor2[QUBITS]);
-           if(prob>0.5) sprintf(texmessage,"   \e[01;32myes!\e[0m");
-           else         sprintf(texmessage,"   \e[01;31mfail\e[0m");
-           fprintf(stderr,"%2lu %12s  %10.6g   %10.4e  %10.4e  %10.4e  %16s\n", QUBITS, texfactors, prob, timeqft,  1.0/timeperstate*nnodes,   1.0/timeperstate, texmessage); 
+           printf("%6lu %12s  %13.6f   %10.4e  %10.4e     %10.4e  %4s\n", QUBITS, texfactors, prob, timeqft,  1.0/timeperstate*nnodes,   1.0/timeperstate, prob > 0.5 ? "yes" : "no");
        }
 next:  z=0; // dummy
-   } 
+   }
 
 fin:   MPI_Finalize();
    exit(0);
