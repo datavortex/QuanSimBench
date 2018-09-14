@@ -1,6 +1,6 @@
 ## What does this benchmark do
 
-- The test is a gate-by-gate simulation of a quantum computer with a full state vector formulation. 
+- A gate-by-gate simulation of a quantum computer with a full state vector formulation. 
 - It simulates a simplified version of Shor's algorithm with an increasing number of qubits Q until resources are exhausted 
 - The score (states/s) is based on how fast the Approximate Quantum Fourier Transform is computed.  
 - The goal is to quantify the ability of a computer to simulate ideal quantum circuits.
