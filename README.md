@@ -14,7 +14,7 @@
 - It just runs: no input or specialized knowledge from user.
 - This reference implementation runs from a laptop to a large supercomputer
 
-## How to compile
+## How to compile and run
 ```
 mpicc -Ofast quansimbench.c -o quansimbench -lm -Wall
 sbatch quansimbench.batch
