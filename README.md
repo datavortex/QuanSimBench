@@ -1,8 +1,8 @@
-# QuanSimBench
+# What is this benchmark
 
 - The test performs a gate-by-gate simulation of a quantum computer with a full state vector description. 
 - It simulates a simplified version of Shor's algorithm with an increasing number of qubits Q until resources are exhausted 
-- Only the Approximate Quantum Fourier Transform is timed, not the modular exponentiation
+- The score (states/s) is based on how fast the Approximate Quantum Fourier Transform is computed.  
 
 ## Why Quantum factorization simulation as a benchmark for HPC
 - Quantum factorization a widely known & relevant problem
