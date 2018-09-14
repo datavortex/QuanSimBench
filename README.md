@@ -33,7 +33,7 @@ ibrun ./quansimbench
 ```
 ## You can test the ability of your computer to simulate quantum AQFT's as follows:
 
-A) First run the benchmark until termination with increasing number of nodes/cores until you get the highest performance in the last row of the column "States/s". That usually corresponds to the largest number of qubits that you can simulate (column Qubits), and the largest number of nodes you can run. (The ALLOCATION ERROR indicates normal termination, and if the program hangs report the last visible result).
+A) First run the benchmark until termination with increasing number of nodes/cores until you get the highest performance in the last row of the column "States/s". That usually corresponds to the largest number of qubits that you can simulate (column Qubits), and the largest number of nodes you can run. If the program hangs, report the last visible result.
 
 B) Verify that you get the "Pass=yes" result on all rows.
 
