@@ -2,7 +2,7 @@
 
 - A gate-by-gate simulation of a quantum computer with a full state vector formulation. 
 - It simulates a simplified version of Shor's algorithm with increasing number of qubits Q until resources are exhausted 
-- The score (states/s) is how fast the Approximate Quantum Fourier Transform can be computed.  
+- The score (states/s) is how fast the Approximate Quantum Fourier Transform can be computed (the modular exponentiation is not timed).  
 - The goal is to quantify the ability of a computer to simulate ideal quantum circuits.
 
 ## Why quantum factorization simulation as a benchmark for HPC
