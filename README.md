@@ -1,4 +1,4 @@
-# What is this benchmark
+## What does this benchmark do
 
 - The test performs a gate-by-gate simulation of a quantum computer with a full state vector description. 
 - It simulates a simplified version of Shor's algorithm with an increasing number of qubits Q until resources are exhausted 
