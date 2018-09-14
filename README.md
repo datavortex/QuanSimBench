@@ -39,4 +39,4 @@ B) Verify that you get the "Pass=yes" result on all rows.
 
 C) Select the row with the highest performance and submit your results to <a href="https://docs.google.com/forms/d/e/1FAIpQLSeVwp_4FZJWyS5UsfBrtxq8PXkKJLoRvgHkpfTuOuJ-wcudiw/viewform?usp=sf_link" target="_blank">QuanSimBench Submission</a>
 
-D) You can see results posted in our github
+D) Soon you may see results posted in our github
