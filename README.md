@@ -37,6 +37,6 @@ A) First run the benchmark with increasing number of nodes/cores until you get t
 
 B) Verify that you get the "Pass=yes" result on all rows.
 
-C) Select the row with the highest performance and submit your results to <a href="https://docs.google.com/forms/d/e/1FAIpQLSeVwp_4FZJWyS5UsfBrtxq8PXkKJLoRvgHkpfTuOuJ-wcudiw/viewform?usp=sf_link" target="_blank">QuanSimBench Submission</a>
+C) Select the row with the highest performance (states/s) and submit your results to <a href="https://docs.google.com/forms/d/e/1FAIpQLSeVwp_4FZJWyS5UsfBrtxq8PXkKJLoRvgHkpfTuOuJ-wcudiw/viewform?usp=sf_link" target="_blank">QuanSimBench Submission</a>
 
 D) The results will be posted soon in our github
