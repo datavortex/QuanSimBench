@@ -1,4 +1,4 @@
-### Please test the ability of your computer to perform quantum circuit simulations as follows:
+### Please test the ability of your computer to simulate quantum AQFT's as follows:
 
 A) First run the benchmark with increasing number of nodes/cores until you get the highest performance in the column "States/s". That usually corresponds to the largest number of qubits that you can simulate (column Qubits), and the largest number of nodes you can run.  
 
