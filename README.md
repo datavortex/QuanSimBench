@@ -3,10 +3,10 @@
 - The test performs a gate-by-gate simulation of a quantum computer with a full state vector description. 
 - It simulates a simplified version of Shor's algorithm with an increasing number of qubits Q until resources are exhausted 
 - The score (states/s) is based on how fast the Approximate Quantum Fourier Transform is computed.  
+- The goal is to quantify the ability of a computer to simulate ideal quantum circuits
 
 ## Why Quantum factorization simulation as a benchmark for HPC
 - Quantum factorization a widely known & relevant problem
-- The goal is to quantify the ability of a computer to simulate ideal quantum circuits
 - Easy to validate and understand the results
 - Each additional qubit doubles RAM usage, CPU power and internode communication: good to test large machines
 - Runs in a reasonable time: 1/2 - 3 hours
