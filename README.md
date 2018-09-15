@@ -10,7 +10,7 @@
 - Each additional qubit doubles RAM usage, CPU power and internode communication: good to test large machines.
 - The output is reproducible, easy to validate and understand.
 - Runs in a reasonable time: 1/2 - 3 hours.
-- Portable with less than ~300 lines of C and MPI, very few dependencies.
+- Minimal portable code with less than ~300 lines of C and MPI, very few dependencies.
 - It just runs: no input or specialized knowledge from user.
 
 ## How to compile and run
