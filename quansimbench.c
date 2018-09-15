@@ -4,7 +4,7 @@
 //  of delta(2^x mod n,1) is larger than 1/2, where n=p*q is the
 //  largest integer that satisfies n^2<=2^QUBITS<2n^2 and maximises (p-1)*(q-1), p<q.
 //  It is a simplification of Shor's factorization algorithm
-//  Santiago Ignacio Betelu, Denton 2018
+//  (c) Santiago Ignacio Betelu, Denton 2018
 //  mpicc -Ofast quansimbench.c -o quansimbench -lm -Wall
 //  sbatch quansimbench.batch
 //    _______                    ______ _       ______                    _
@@ -25,7 +25,7 @@
 #include <time.h>
 
 #define VERSION "1.0"
-#define pi 3.141592653589793
+#define pi 3.14159265358979323846
 
 float complex *c, *buffer; // quantum amplitudes
 int64_t QUBITS,N,BUFFERSIZE,NBUFFERS,NODEBITS,nnodes,inode;
@@ -64,12 +64,12 @@ void H(int64_t qubit){  // Hadamard gate acting on qubit
     static MPI_Request reqsend[1024], reqrecv[1024];
     //
     if(qubit< QUBITS-NODEBITS){
-       mask1= (0xFFFFFFFFFFFFFFFFll<<qubit);  // the masks avoif a branch and half of memory accesses
+       mask1= (0xFFFFFFFFFFFFFFFFll<<qubit);  // to avoid branching and half of memory accesses
        mask2=  ~mask1;
-       mask1= (mask1<<1); // now, qubit is a zero on both m1 and m2
+       mask1= (mask1<<1); 
        for(q=0;q<N/2/nnodes;q++){
-           x= ((q<<1)&mask1) | (q&mask2); // 64 bit number with a 0 on the qubit'th position
-           y= x|(1ll<<qubit);
+           x= ((q<<1)&mask1) | (q&mask2); // 64 bit index with 0 on the qubit'th position
+           y= x|(1ll<<qubit);             //        index with 1 on the qubit'th position
            aux=  (c[x]-c[y])*sqrt(0.5);
            c[x]= (c[x]+c[y])*sqrt(0.5);
            c[y]=aux;
@@ -223,7 +223,7 @@ int main(int argc, char **argv){
    char texfactors[32];
 
    // largest integers that can be factored with Shor's algoritm with register size 'qubits'
-   // n[qubits]= factor1[qubits]*factor2[qubits]   2^qubits < n^2 < 2^{qubits+1}
+   // n[qubits]= factor1[qubits]*factor2[qubits]   2^qubits <= n^2 < 2^{qubits+1}, qubits>=9
    int64_t factor1[61]={0,0,0,0,0,  0,0,0, 0,3, 3, 3, 5, 7, 7, 7, 11, 11, 17, 23, 19, 23, 23, 43, 61, 53, 79, 71, 83, 101, 137, 149, 233, 211, 283, 241, 503, 389, 557, 859, 911, 1039, 1399, 1669, 1787, 2039, 2357, 2609, 4093, 3709, 5471, 5503, 8011, 8537, 11119, 12757, 12941, 17837, 22717, 24847, 28579};
 
    int64_t factor2[61]={0,0,0,0,0,  0,0,0,0,7, 7, 13, 11, 11, 17, 23, 23, 31, 29, 31, 53, 61, 89, 67, 67, 109, 103, 163, 197, 229, 239, 311, 281, 439, 463, 769, 521, 953, 941, 863, 1151, 1427, 1499, 1777, 2347, 2909, 3559, 4547, 4099, 6397, 6133, 8623, 8377, 11117, 12071, 14879, 20743, 21283, 23633, 30557, 37571};
@@ -263,8 +263,8 @@ int main(int argc, char **argv){
 
        c=realloc(c, (N/nnodes)*sizeof(complex float) );             // re-allocate double float amplitudes
        if( c==NULL ){
-          if(inode==0) fprintf(stderr,"ALLOCATION ERROR node %d",(int)inode);
-          exit(777);
+          if(inode==0) fprintf(stderr,"Ending due to allocation error");
+          exit(1);
           goto fin;
        }
        buffer=realloc(buffer, NBUFFERS*BUFFERSIZE*sizeof(complex float));    // for communication
