@@ -60,7 +60,6 @@ void H(int64_t qubit){  // Hadamard gate acting on qubit
     int64_t x,y,mask1,mask2,q,chunk;
     int node,b,tag;
     float complex aux;
-    MPI_Status st;
     static MPI_Request reqsend[1024], reqrecv[1024];
     //
     if(qubit< QUBITS-NODEBITS){
@@ -84,8 +83,8 @@ void H(int64_t qubit){  // Hadamard gate acting on qubit
             MPI_Isend( &c[chunk+b*BUFFERSIZE], (int)BUFFERSIZE, MPI_COMPLEX, (int)node, tag, MPI_COMM_WORLD, &reqsend[b]);
          }
          for(b=0;b<NBUFFERS;b++){
-            MPI_Wait(&reqsend[b],&st);
-            MPI_Wait(&reqrecv[b],&st);
+            MPI_Wait(&reqsend[b],MPI_STATUS_IGNORE);
+            MPI_Wait(&reqrecv[b],MPI_STATUS_IGNORE);
             if( inode&(1ll<<(qubit-(QUBITS-NODEBITS))) ){
                 for(q=0; q<BUFFERSIZE; q++){
                    c[chunk+q+b*BUFFERSIZE]= -(c[chunk+q+b*BUFFERSIZE]-buffer[b*BUFFERSIZE+q])*sqrt(0.5);
@@ -142,8 +141,8 @@ void SWAP(int64_t qubit1, int64_t qubit2){  // SWAP between qubit1 and qubit2, q
                   MPI_Isend( &c[b*BUFFERSIZE+chunk], (int)BUFFERSIZE, MPI_COMPLEX, (int)node, tag, MPI_COMM_WORLD, &reqsend[b]);
               }
               for(b=0;b<NBUFFERS;b++){
-                  MPI_Wait(&reqsend[b],&st);
-                  MPI_Wait(&reqrecv[b],&st);
+                  MPI_Wait(&reqsend[b],MPI_STATUS_IGNORE);
+                  MPI_Wait(&reqrecv[b],MPI_STATUS_IGNORE);
                   for(q=0; q<BUFFERSIZE; q++){
                       c[b*BUFFERSIZE+chunk+q]= buffer[b*BUFFERSIZE+q];
                   }
