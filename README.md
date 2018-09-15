@@ -33,7 +33,7 @@ ibrun ./quansimbench
 ```
 ## You can test the ability of your computer to simulate quantum AQFT's as follows:
 
-1- First run the benchmark until completion with increasing number of nodes/cores until you get the largest number of qubits (first column). That usually corresponds to the largest number of nodes/cores you can run. If the program hangs, report the last visible row.
+1- First run the benchmark until completion with increasing number of nodes/cores until you get the largest number States/s in the last row. That usually corresponds to the largest number of nodes you can run. If the program hangs, report the last visible row.
 
 2- Verify that you get the "Pass=yes" result on all rows.
 
