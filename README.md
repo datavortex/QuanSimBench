@@ -15,14 +15,15 @@
 - This reference implementation runs from a laptop to a large supercomputer
 
 ## How to compile and run
+This is system dependent. For example, in systems with mpicc and slurm one usually does  
 ```
 mpicc -Ofast quansimbench.c -o quansimbench -lm -Wall
 sbatch quansimbench.batch
 ```
-You may want to add optimization flags for your architecture
+You may want to add optimization flags for your architecture.
 
 ## Batch file quansimbench.batch
-The number of nodes and number of cores must be a power of two:
+In all systems, the number of nodes and number of cores must be a power of two. In systems with slurm, one can use a variation of the reference batch
 ```
 #SBATCH –o output-%J.txt
 #SBATCH --nodes=8     # 8 nodes (must be a power of 2)
