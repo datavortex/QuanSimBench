@@ -263,7 +263,7 @@ int main(int argc, char **argv){
 
        c=realloc(c, (N/nnodes)*sizeof(complex float) );             // re-allocate double float amplitudes
        if( c==NULL ){
-          if(inode==0) fprintf(stderr,"Ending due to allocation error");
+          if(inode==0) fprintf(stderr,"Ending due to allocation error\n");
           exit(1);
           goto fin;
        }
