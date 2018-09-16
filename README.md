@@ -32,6 +32,7 @@ using a Slurm batch script such as:
 mpirun ./quansimbench
 ```
 **In all systems, the number of nodes and number of cores must be a power of two.**
+
 The code contains hints on how to include pragmas for OpenMP as well.
 
 ## How to test the ability of your computer to simulate quantum AQFTs
