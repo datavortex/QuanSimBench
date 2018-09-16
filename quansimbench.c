@@ -25,7 +25,6 @@
 #include <time.h>
 
 #define VERSION "1.0"
-#define pi 3.14159265358979323846
 
 float complex *c, *buffer; // quantum amplitudes
 int64_t QUBITS,N,BUFFERSIZE,NBUFFERS,NODEBITS,nnodes,inode;
@@ -181,7 +180,7 @@ void CPN(int64_t qubit1, int64_t nq){  // PHASE between control qubit1 and qubit
     double complex expphase[QUBITS+1];
     //
     for(k=1;k<=nq;k++){
-        phase= pi*pow(2.0,-1.0*k);
+        phase= M_PI*pow(2.0,-k);
         expphase[k]= cexpl(I*phase);
     }
     for(q=0;q<N/nnodes;q++){
