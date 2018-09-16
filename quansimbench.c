@@ -67,7 +67,7 @@ void H(int64_t qubit){  // Hadamard gate acting on qubit
     if(qubit< QUBITS-NODEBITS){
        mask1= (0xFFFFFFFFFFFFFFFFll<<qubit);  // to avoid branching and half of memory accesses
        mask2=  ~mask1;
-       mask1= (mask1<<1); 
+       mask1= (mask1<<1);
        for(q=0;q<N/2/nnodes;q++){
            x= ((q<<1)&mask1) | (q&mask2); // 64 bit index with 0 on the qubit'th position
            y= x|(1ll<<qubit);             //        index with 1 on the qubit'th position
@@ -106,7 +106,6 @@ void SWAP(int64_t qubit1, int64_t qubit2){  // SWAP between qubit1 and qubit2, q
     int64_t x,y,b1,b2,chunk,q;
     int node,b,tag;
     float complex aux;
-    MPI_Status st;
     static MPI_Request reqsend[1024], reqrecv[1024];
     //
     if(qubit1>qubit2){ // sort qubit1 < qubit2
@@ -163,8 +162,8 @@ void SWAP(int64_t qubit1, int64_t qubit2){  // SWAP between qubit1 and qubit2, q
                   MPI_Isend( &c[b*BUFFERSIZE+chunk], (int)BUFFERSIZE, MPI_COMPLEX, (int)node, tag, MPI_COMM_WORLD, &reqsend[b]);
               }
               for(b=0;b<NBUFFERS;b++){
-                  MPI_Wait(&reqsend[b],&st);
-                  MPI_Wait(&reqrecv[b],&st);
+                  MPI_Wait(&reqsend[b],MPI_STATUS_IGNORE);
+                  MPI_Wait(&reqrecv[b],MPI_STATUS_IGNORE);
                   for(q=0; q<BUFFERSIZE; q=q+1){
                        x= b*BUFFERSIZE+chunk+q; // received register
                        b1= (x>>qubit1)&1ll;
