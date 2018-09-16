@@ -25,6 +25,9 @@
 #include <time.h>
 
 #define VERSION "1.0"
+#ifndef MAXQUBITS
+# define MAXQUBITS 60
+#endif
 
 float complex *c, *buffer; // quantum amplitudes
 int64_t QUBITS,N,BUFFERSIZE,NBUFFERS,NODEBITS,nnodes,inode;
@@ -244,7 +247,7 @@ int main(int argc, char **argv){
    }
 
    // iterate over number of qubits
-   for(QUBITS=9; QUBITS<=60; QUBITS++){ // 9 is minimum qubits for this test
+   for(QUBITS=9; QUBITS<=MAXQUBITS; QUBITS++){ // 9 is minimum qubits for this test
 
        N= (1ll<<QUBITS); // state vector size
        if( N<nnodes) goto next;  // too many nodes for small N
@@ -329,6 +332,6 @@ next:  z=0; // dummy
    }
 
 fin:   MPI_Finalize();
-   exit(0);
+   return 0;
 }
 ////////////////////////////////////////////////////////////////////////////////
