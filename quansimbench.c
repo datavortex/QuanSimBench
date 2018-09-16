@@ -184,13 +184,13 @@ void SWAP(int64_t qubit1, int64_t qubit2){  // SWAP between qubit1 and qubit2, q
 /////////////////////////////////////////////////////////////////////////////////////////////////
 void CPN(int64_t qubit1, int64_t nq){  // PHASE between control qubit1 and qubit+1,2,3,..nq, phase= pi/2^1, pi/2^2,...
     int64_t x,q,b1,b2,k,qubit2;
-    double phase;
-    double complex expphase[QUBITS+1];
+    float phase;
+    float complex expphase[QUBITS+1];
     //
 #pragma omp parallel for
     for(k=1;k<=nq;k++){
-        phase= M_PI*pow(2.0,-k);
-        expphase[k]= cexp(I*phase);
+        phase= M_PI*powf(2.0,-k);
+        expphase[k]= cexpf(I*phase);
     }
 #pragma omp parallel for
     for(q=0;q<N/nnodes;q++){
