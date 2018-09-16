@@ -240,7 +240,7 @@ int main(int argc, char **argv){
       exit(1);
    }
    if(inode==0){
-       printf("Quansimbench version %s\n",VERSION);
+       printf("QuanSimBench version %s\n",VERSION);
        printf("Ranks: %lu\n\n", nnodes);
        printf("Qubits      Factors    Probability         Time    States/s  States/s/rank  Pass\n");
    }
