@@ -33,7 +33,7 @@ mpirun ./quansimbench
 ```
 **In all systems, the number of nodes and number of cores must be a power of two.**
 
-The code contains comments with hints to add OpenMP as well.
+The code contains comments with hints to optional addition of OpenMP as well.
 
 ## How to test the ability of your computer to simulate quantum AQFTs
 
