@@ -26,7 +26,7 @@ using a Slurm batch script such as:
 ```bash
 #SBATCH –o output-%J.txt
 #SBATCH --nodes=8     # 8 nodes (must be a power of 2)
-#SBATCH –n 256        # 64 cores per node (must be a power of 2)
+#SBATCH –n 64         # 8 ranks per node (must be a power of 2)
 #SBATCH –p normal     # what queue
 #SBATCH –t 02:00:00   # usually less than 3 hours
 mpirun ./quansimbench
