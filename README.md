@@ -16,7 +16,7 @@
 ## How to compile and run
 This is system dependent. For example, in systems with mpicc and Slurm one usually compiles with
 ```bash
-mpicc -Ofast quansimbench.c -o quansimbench -lm -Wall
+mpicc -Ofast quansimbench.c -o quansimbench -lm
 ```
 and runs the program with
 ```bash
