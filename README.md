@@ -31,13 +31,12 @@ using a Slurm batch script such as:
 #SBATCH –t 02:00:00   # usually less than 3 hours
 mpirun ./quansimbench
 ```
-
 **In all systems, the number of nodes and number of cores must be a power of two.**
-
+The code contains hints on how to include pragmas for OpenMP as well.
 
 ## How to test the ability of your computer to simulate quantum AQFTs
 
-1. First run the benchmark until completion with increasing number of ranks until you get the largest number of States/s. That usually corresponds to the largest number of ranks you can run. If the program hangs, report the last visible row.
+1. First run the benchmark until completion with increasing number of nodes/ranks until you get the largest number of States/s. That usually corresponds to the largest number of nodes/ranks you can run. If the program hangs, report the last visible row.
 
 2. Verify that you get the "Pass=yes" result on all rows.
 
