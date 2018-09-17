@@ -25,7 +25,9 @@
 #include <time.h>
 
 #define VERSION "1.0"
-#define pi 3.14159265358979323846
+#ifndef MAXQUBITS
+# define MAXQUBITS 60
+#endif
 
 float complex *c, *buffer; // quantum amplitudes
 int64_t QUBITS,N,BUFFERSIZE,NBUFFERS,NODEBITS,nnodes,inode;
@@ -60,13 +62,13 @@ void H(int64_t qubit){  // Hadamard gate acting on qubit
     int64_t x,y,mask1,mask2,q,chunk;
     int node,b,tag;
     float complex aux;
-    MPI_Status st;
     static MPI_Request reqsend[1024], reqrecv[1024];
     //
     if(qubit< QUBITS-NODEBITS){
        mask1= (0xFFFFFFFFFFFFFFFFll<<qubit);  // to avoid branching and half of memory accesses
        mask2=  ~mask1;
-       mask1= (mask1<<1); 
+       mask1= (mask1<<1);
+#pragma omp parallel for
        for(q=0;q<N/2/nnodes;q++){
            x= ((q<<1)&mask1) | (q&mask2); // 64 bit index with 0 on the qubit'th position
            y= x|(1ll<<qubit);             //        index with 1 on the qubit'th position
@@ -84,13 +86,15 @@ void H(int64_t qubit){  // Hadamard gate acting on qubit
             MPI_Isend( &c[chunk+b*BUFFERSIZE], (int)BUFFERSIZE, MPI_COMPLEX, (int)node, tag, MPI_COMM_WORLD, &reqsend[b]);
          }
          for(b=0;b<NBUFFERS;b++){
-            MPI_Wait(&reqsend[b],&st);
-            MPI_Wait(&reqrecv[b],&st);
+            MPI_Wait(&reqsend[b],MPI_STATUS_IGNORE);
+            MPI_Wait(&reqrecv[b],MPI_STATUS_IGNORE);
             if( inode&(1ll<<(qubit-(QUBITS-NODEBITS))) ){
+#pragma omp parallel for
                 for(q=0; q<BUFFERSIZE; q++){
                    c[chunk+q+b*BUFFERSIZE]= -(c[chunk+q+b*BUFFERSIZE]-buffer[b*BUFFERSIZE+q])*sqrt(0.5);
                 }
             }else{
+#pragma omp parallel for
                 for(q=0; q<BUFFERSIZE; q++){
                    c[chunk+q+b*BUFFERSIZE]=  (c[chunk+q+b*BUFFERSIZE]+buffer[b*BUFFERSIZE+q])*sqrt(0.5);
                 }
@@ -105,7 +109,6 @@ void SWAP(int64_t qubit1, int64_t qubit2){  // SWAP between qubit1 and qubit2, q
     int64_t x,y,b1,b2,chunk,q;
     int node,b,tag;
     float complex aux;
-    MPI_Status st;
     static MPI_Request reqsend[1024], reqrecv[1024];
     //
     if(qubit1>qubit2){ // sort qubit1 < qubit2
@@ -114,6 +117,7 @@ void SWAP(int64_t qubit1, int64_t qubit2){  // SWAP between qubit1 and qubit2, q
         qubit2=q;
     }
     if(qubit2<QUBITS-NODEBITS && qubit1<QUBITS-NODEBITS){
+#pragma omp parallel for
         for(q=0;q<N/nnodes;q++){
            x= q+ 0*inode*(N/nnodes);  // 0* because affects only lower qubits
            b1= (x>>qubit1)&1ll;
@@ -142,8 +146,9 @@ void SWAP(int64_t qubit1, int64_t qubit2){  // SWAP between qubit1 and qubit2, q
                   MPI_Isend( &c[b*BUFFERSIZE+chunk], (int)BUFFERSIZE, MPI_COMPLEX, (int)node, tag, MPI_COMM_WORLD, &reqsend[b]);
               }
               for(b=0;b<NBUFFERS;b++){
-                  MPI_Wait(&reqsend[b],&st);
-                  MPI_Wait(&reqrecv[b],&st);
+                  MPI_Wait(&reqsend[b],MPI_STATUS_IGNORE);
+                  MPI_Wait(&reqrecv[b],MPI_STATUS_IGNORE);
+#pragma omp parallel for
                   for(q=0; q<BUFFERSIZE; q++){
                       c[b*BUFFERSIZE+chunk+q]= buffer[b*BUFFERSIZE+q];
                   }
@@ -162,8 +167,9 @@ void SWAP(int64_t qubit1, int64_t qubit2){  // SWAP between qubit1 and qubit2, q
                   MPI_Isend( &c[b*BUFFERSIZE+chunk], (int)BUFFERSIZE, MPI_COMPLEX, (int)node, tag, MPI_COMM_WORLD, &reqsend[b]);
               }
               for(b=0;b<NBUFFERS;b++){
-                  MPI_Wait(&reqsend[b],&st);
-                  MPI_Wait(&reqrecv[b],&st);
+                  MPI_Wait(&reqsend[b],MPI_STATUS_IGNORE);
+                  MPI_Wait(&reqrecv[b],MPI_STATUS_IGNORE);
+#pragma omp parallel for
                   for(q=0; q<BUFFERSIZE; q=q+1){
                        x= b*BUFFERSIZE+chunk+q; // received register
                        b1= (x>>qubit1)&1ll;
@@ -178,13 +184,15 @@ void SWAP(int64_t qubit1, int64_t qubit2){  // SWAP between qubit1 and qubit2, q
 /////////////////////////////////////////////////////////////////////////////////////////////////
 void CPN(int64_t qubit1, int64_t nq){  // PHASE between control qubit1 and qubit+1,2,3,..nq, phase= pi/2^1, pi/2^2,...
     int64_t x,q,b1,b2,k,qubit2;
-    double phase;
-    double complex expphase[QUBITS+1];
+    float phase;
+    float complex expphase[QUBITS+1];
     //
+#pragma omp parallel for
     for(k=1;k<=nq;k++){
-        phase= pi*pow(2.0,-1.0*k);
-        expphase[k]= cexpl(I*phase);
+        phase= M_PI*powf(2.0,-k);
+        expphase[k]= cexpf(I*phase);
     }
+#pragma omp parallel for
     for(q=0;q<N/nnodes;q++){
        x= q+inode*(N/nnodes);
        b1= ((x>>qubit1)&1ll);
@@ -240,13 +248,13 @@ int main(int argc, char **argv){
       exit(1);
    }
    if(inode==0){
-       printf("Quansimbench version %s\n",VERSION);
+       printf("QuanSimBench version %s\n",VERSION);
        printf("Ranks: %lu\n\n", nnodes);
        printf("Qubits      Factors    Probability         Time    States/s  States/s/rank  Pass\n");
    }
 
    // iterate over number of qubits
-   for(QUBITS=9; QUBITS<=60; QUBITS++){ // 9 is minimum qubits for this test
+   for(QUBITS=9; QUBITS<=MAXQUBITS; QUBITS++){ // 9 is minimum qubits for this test
 
        N= (1ll<<QUBITS); // state vector size
        if( N<nnodes) goto next;  // too many nodes for small N
@@ -326,11 +334,12 @@ int main(int argc, char **argv){
        if(inode==0){
            sprintf(texfactors,"%lu*%lu",factor1[QUBITS], factor2[QUBITS]);
            printf("%6lu %12s  %13.6f   %10.4e  %10.4e     %10.4e  %4s\n", QUBITS, texfactors, prob, timeqft,  1.0/timeperstate*nnodes,   1.0/timeperstate, prob > 0.5 ? "yes" : "no");
+           fflush(stdout);
        }
 next:  z=0; // dummy
    }
 
 fin:   MPI_Finalize();
-   exit(0);
+   return 0;
 }
 ////////////////////////////////////////////////////////////////////////////////

@@ -1,0 +1,32 @@
+sudo: false
+
+language: c
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - openmpi-bin
+      - libopenmpi-dev
+      - mpich
+      - libmpich-dev
+
+compiler:
+  - clang
+  - gcc
+
+env:
+  - MPI_FLAVOR=openmpi MPI_OPTS="--mca btl sm,self"
+  - MPI_FLAVOR=mpich   MPI_OPTS=""
+
+before_install:
+  - test -n $CC && unset CC
+  - export NPES=$(lscpu | awk '/^CPU\(s\):/ {print int($2/2 + 0.5)}')
+  - export OMP_NUM_THREADS=2
+  - set -o pipefail
+
+script:
+  - mpicc.$MPI_FLAVOR -DMAXQUBITS=25 -Wall -Wextra -Werror -fopenmp -Ofast -march=native -o quansimbench quansimbench.c -lm
+  - mpirun.$MPI_FLAVOR -np $NPES $MPI_OPTS ./quansimbench | tee /tmp/qsb.out
+  - awk -e '$1>=9 && $NF=="yes" {yes++} END {if (yes != 17) exit 1}' /tmp/qsb.out
