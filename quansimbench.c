@@ -334,6 +334,7 @@ int main(int argc, char **argv){
        if(inode==0){
            sprintf(texfactors,"%lu*%lu",factor1[QUBITS], factor2[QUBITS]);
            printf("%6lu %12s  %13.6f   %10.4e  %10.4e     %10.4e  %4s\n", QUBITS, texfactors, prob, timeqft,  1.0/timeperstate*nnodes,   1.0/timeperstate, prob > 0.5 ? "yes" : "no");
+           fflush(stdout);
        }
 next:  z=0; // dummy
    }
