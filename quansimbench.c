@@ -68,7 +68,7 @@ void H(int64_t qubit){  // Hadamard gate acting on qubit
        mask1= (0xFFFFFFFFFFFFFFFFll<<qubit);  // to avoid branching and half of memory accesses
        mask2=  ~mask1;
        mask1= (mask1<<1);
-#pragma omp parallel for
+#pragma omp parallel for private(x,y,aux)
        for(q=0;q<N/2/nnodes;q++){
            x= ((q<<1)&mask1) | (q&mask2); // 64 bit index with 0 on the qubit'th position
            y= x|(1ll<<qubit);             //        index with 1 on the qubit'th position
@@ -117,7 +117,7 @@ void SWAP(int64_t qubit1, int64_t qubit2){  // SWAP between qubit1 and qubit2, q
         qubit2=q;
     }
     if(qubit2<QUBITS-NODEBITS && qubit1<QUBITS-NODEBITS){
-#pragma omp parallel for
+#pragma omp parallel for private(x,y,b1,b2,aux)
         for(q=0;q<N/nnodes;q++){
            x= q+ 0*inode*(N/nnodes);  // 0* because affects only lower qubits
            b1= (x>>qubit1)&1ll;
@@ -169,7 +169,7 @@ void SWAP(int64_t qubit1, int64_t qubit2){  // SWAP between qubit1 and qubit2, q
               for(b=0;b<NBUFFERS;b++){
                   MPI_Wait(&reqsend[b],MPI_STATUS_IGNORE);
                   MPI_Wait(&reqrecv[b],MPI_STATUS_IGNORE);
-#pragma omp parallel for
+#pragma omp parallel for private(x,y,b1)
                   for(q=0; q<BUFFERSIZE; q=q+1){
                        x= b*BUFFERSIZE+chunk+q; // received register
                        b1= (x>>qubit1)&1ll;
@@ -192,7 +192,7 @@ void CPN(int64_t qubit1, int64_t nq){  // PHASE between control qubit1 and qubit
         phase= M_PI*powf(2.0,-k);
         expphase[k]= cexpf(I*phase);
     }
-#pragma omp parallel for
+#pragma omp parallel for private(x,b1,b2,k,qubit2)
     for(q=0;q<N/nnodes;q++){
        x= q+inode*(N/nnodes);
        b1= ((x>>qubit1)&1ll);
