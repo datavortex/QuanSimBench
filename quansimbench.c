@@ -72,8 +72,8 @@ void H(int64_t qubit){  // Hadamard gate acting on qubit
        for(q=0;q<N/2/nnodes;q++){
            x= ((q<<1)&mask1) | (q&mask2); // 64 bit index with 0 on the qubit'th position
            y= x|(1ll<<qubit);             //        index with 1 on the qubit'th position
-           aux=  (c[x]-c[y])*sqrt(0.5);
-           c[x]= (c[x]+c[y])*sqrt(0.5);
+           aux=  (c[x]-c[y])*M_SQRT1_2;
+           c[x]= (c[x]+c[y])*M_SQRT1_2;
            c[y]=aux;
        }
     }else{
@@ -91,12 +91,12 @@ void H(int64_t qubit){  // Hadamard gate acting on qubit
             if( inode&(1ll<<(qubit-(QUBITS-NODEBITS))) ){
 #pragma omp parallel for
                 for(q=0; q<BUFFERSIZE; q++){
-                   c[chunk+q+b*BUFFERSIZE]= -(c[chunk+q+b*BUFFERSIZE]-buffer[b*BUFFERSIZE+q])*sqrt(0.5);
+                   c[chunk+q+b*BUFFERSIZE]= -(c[chunk+q+b*BUFFERSIZE]-buffer[b*BUFFERSIZE+q])*M_SQRT1_2;
                 }
             }else{
 #pragma omp parallel for
                 for(q=0; q<BUFFERSIZE; q++){
-                   c[chunk+q+b*BUFFERSIZE]=  (c[chunk+q+b*BUFFERSIZE]+buffer[b*BUFFERSIZE+q])*sqrt(0.5);
+                   c[chunk+q+b*BUFFERSIZE]=  (c[chunk+q+b*BUFFERSIZE]+buffer[b*BUFFERSIZE+q])*M_SQRT1_2;
                 }
             }
          }
