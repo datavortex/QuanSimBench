@@ -187,7 +187,6 @@ void CPN(int64_t qubit1, int64_t nq){  // PHASE between control qubit1 and qubit
     float phase;
     float complex expphase[QUBITS+1];
     //
-#pragma omp parallel for
     for(k=1;k<=nq;k++){
         phase= M_PI*powf(2.0,-k);
         expphase[k]= cexpf(I*phase);
