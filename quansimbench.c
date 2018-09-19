@@ -5,6 +5,7 @@
 //  largest integer that satisfies n^2<=2^QUBITS<2n^2 and maximises (p-1)*(q-1), p<q.
 //  It is a simplification of Shor's factorization algorithm
 //  (c) Santiago Ignacio Betelu, Denton 2018
+//  Thanks Datavortex Technologies for providing the hardware and research support for developing this benchmark.
 //  mpicc -Ofast quansimbench.c -o quansimbench -lm -Wall
 //  sbatch quansimbench.batch
 //    _______                    ______ _       ______                    _
