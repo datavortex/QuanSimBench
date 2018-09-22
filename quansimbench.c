@@ -230,7 +230,7 @@ int64_t powmod(int64_t a, int64_t b, int64_t n){
 int main(int argc, char **argv){
    int64_t x,aux,nphase,n,l,mulperiod,peaknumber,z,q,numstates,npeaks,predictedx;
    struct timespec tim0,tim1;
-   double timeperstate,timeqft,s,s0,prob,prob0,peakspacing; // don't to float
+   double timeperstate,timeqft,s,s0,prob,prob0,peakspacing; // don't change to float
    char texfactors[32];
 
    // largest integers that can be factored with Shor's algoritm with register size 'qubits'
