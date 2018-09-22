@@ -5,6 +5,7 @@
 //  largest integer that satisfies n^2<=2^QUBITS<2n^2 and maximises (p-1)*(q-1), p<q.
 //  It is a simplification of Shor's factorization algorithm
 //  (c) Santiago Ignacio Betelu, Denton 2018
+//  Thanks Datavortex Technologies for providing the hardware and research support for developing this benchmark.
 //  mpicc -Ofast quansimbench.c -o quansimbench -lm -Wall
 //  sbatch quansimbench.batch
 //    _______                    ______ _       ______                    _
@@ -21,8 +22,11 @@
 #include <math.h>
 #include <complex.h>
 #include <stdint.h>
-#include <mpi.h>
 #include <time.h>
+#include <mpi.h>
+#ifdef _OPENMP
+# include <omp.h>
+#endif
 
 #define VERSION "1.0"
 #ifndef MAXQUBITS
@@ -30,7 +34,7 @@
 #endif
 
 float complex *c, *buffer; // quantum amplitudes
-int64_t QUBITS,N,BUFFERSIZE,NBUFFERS,NODEBITS,nnodes,inode;
+int64_t QUBITS,N,BUFFERSIZE,NBUFFERS,NODEBITS,nranks,nthreads,inode;
 /////////////////////////////////////////////////////////////////////////////
 //  Quantum numstates addressing example with 4 nodes.
 //  1- The QUBITS-NODEBITS least significant bits can be swapped within each node.
@@ -68,18 +72,18 @@ void H(int64_t qubit){  // Hadamard gate acting on qubit
        mask1= (0xFFFFFFFFFFFFFFFFll<<qubit);  // to avoid branching and half of memory accesses
        mask2=  ~mask1;
        mask1= (mask1<<1);
-#pragma omp parallel for
-       for(q=0;q<N/2/nnodes;q++){
+#pragma omp parallel for private(x,y,aux)
+       for(q=0;q<N/2/nranks;q++){
            x= ((q<<1)&mask1) | (q&mask2); // 64 bit index with 0 on the qubit'th position
            y= x|(1ll<<qubit);             //        index with 1 on the qubit'th position
-           aux=  (c[x]-c[y])*sqrt(0.5);
-           c[x]= (c[x]+c[y])*sqrt(0.5);
+           aux=  (c[x]-c[y])*M_SQRT1_2;
+           c[x]= (c[x]+c[y])*M_SQRT1_2;
            c[y]=aux;
        }
     }else{
        node= inode^(1ULL<<(qubit-(QUBITS-NODEBITS)));
        tag=0;
-       for(chunk=0; chunk<N/nnodes; chunk=chunk+NBUFFERS*BUFFERSIZE){
+       for(chunk=0; chunk<N/nranks; chunk=chunk+NBUFFERS*BUFFERSIZE){
          for(b=0;b<NBUFFERS;b++){
             tag= tag+1;
             MPI_Irecv(  &buffer[b*BUFFERSIZE], (int)BUFFERSIZE, MPI_COMPLEX, (int)node, tag, MPI_COMM_WORLD, &reqrecv[b]);
@@ -91,12 +95,12 @@ void H(int64_t qubit){  // Hadamard gate acting on qubit
             if( inode&(1ll<<(qubit-(QUBITS-NODEBITS))) ){
 #pragma omp parallel for
                 for(q=0; q<BUFFERSIZE; q++){
-                   c[chunk+q+b*BUFFERSIZE]= -(c[chunk+q+b*BUFFERSIZE]-buffer[b*BUFFERSIZE+q])*sqrt(0.5);
+                   c[chunk+q+b*BUFFERSIZE]= -(c[chunk+q+b*BUFFERSIZE]-buffer[b*BUFFERSIZE+q])*M_SQRT1_2;
                 }
             }else{
 #pragma omp parallel for
                 for(q=0; q<BUFFERSIZE; q++){
-                   c[chunk+q+b*BUFFERSIZE]=  (c[chunk+q+b*BUFFERSIZE]+buffer[b*BUFFERSIZE+q])*sqrt(0.5);
+                   c[chunk+q+b*BUFFERSIZE]=  (c[chunk+q+b*BUFFERSIZE]+buffer[b*BUFFERSIZE+q])*M_SQRT1_2;
                 }
             }
          }
@@ -117,9 +121,9 @@ void SWAP(int64_t qubit1, int64_t qubit2){  // SWAP between qubit1 and qubit2, q
         qubit2=q;
     }
     if(qubit2<QUBITS-NODEBITS && qubit1<QUBITS-NODEBITS){
-#pragma omp parallel for
-        for(q=0;q<N/nnodes;q++){
-           x= q+ 0*inode*(N/nnodes);  // 0* because affects only lower qubits
+#pragma omp parallel for private(x,y,b1,b2,aux)
+        for(q=0;q<N/nranks;q++){
+           x= q+ 0*inode*(N/nranks);  // 0* because affects only lower qubits
            b1= (x>>qubit1)&1ll;
            b2= (x>>qubit2)&1ll;
            if(b1!=b2){
@@ -132,14 +136,14 @@ void SWAP(int64_t qubit1, int64_t qubit2){  // SWAP between qubit1 and qubit2, q
            }
         }
     }else if(qubit1 >= QUBITS-NODEBITS && qubit2 >= QUBITS-NODEBITS) { // in this case swap all array alements with another node
-        x=  inode*(N/nnodes);
+        x=  inode*(N/nranks);
         b1= (x>>qubit1)&1ll;
         b2= (x>>qubit2)&1ll;
         if( b1!=b2 ){
            node= inode^(1<<(qubit2-(QUBITS-NODEBITS)));  // here qubit2 >= QUBITS-NODEBITS for sure
            node=  node^(1<<(qubit1-(QUBITS-NODEBITS)));
            tag=0;
-           for(chunk=0; chunk<N/nnodes; chunk=chunk+NBUFFERS*BUFFERSIZE){
+           for(chunk=0; chunk<N/nranks; chunk=chunk+NBUFFERS*BUFFERSIZE){
               for(b=0;b<NBUFFERS;b++){
                   tag=tag+1;
                   MPI_Irecv( &buffer[b*BUFFERSIZE],  (int)BUFFERSIZE, MPI_COMPLEX, (int)node, tag, MPI_COMM_WORLD, &reqrecv[b]);
@@ -157,10 +161,10 @@ void SWAP(int64_t qubit1, int64_t qubit2){  // SWAP between qubit1 and qubit2, q
         }
    }else{  // qubit1 inside same node but qubit2 in another node
            node= inode^(1<<(qubit2-(QUBITS-NODEBITS)));  // here qubit2 >= QUBITS-NODEBITS for sure
-           x= node*(N/nnodes);
+           x= node*(N/nranks);
            b2= (x>>qubit2)&1ll;
            tag=0;
-           for(chunk=0; chunk<N/nnodes; chunk=chunk+NBUFFERS*BUFFERSIZE){
+           for(chunk=0; chunk<N/nranks; chunk=chunk+NBUFFERS*BUFFERSIZE){
               for(b=0;b<NBUFFERS;b++){
                   tag=tag+1;
                   MPI_Irecv( &buffer[b*BUFFERSIZE],  (int)BUFFERSIZE, MPI_COMPLEX, (int)node, tag, MPI_COMM_WORLD, &reqrecv[b]);
@@ -169,7 +173,7 @@ void SWAP(int64_t qubit1, int64_t qubit2){  // SWAP between qubit1 and qubit2, q
               for(b=0;b<NBUFFERS;b++){
                   MPI_Wait(&reqsend[b],MPI_STATUS_IGNORE);
                   MPI_Wait(&reqrecv[b],MPI_STATUS_IGNORE);
-#pragma omp parallel for
+#pragma omp parallel for private(x,y,b1)
                   for(q=0; q<BUFFERSIZE; q=q+1){
                        x= b*BUFFERSIZE+chunk+q; // received register
                        b1= (x>>qubit1)&1ll;
@@ -187,14 +191,13 @@ void CPN(int64_t qubit1, int64_t nq){  // PHASE between control qubit1 and qubit
     float phase;
     float complex expphase[QUBITS+1];
     //
-#pragma omp parallel for
     for(k=1;k<=nq;k++){
         phase= M_PI*powf(2.0,-k);
         expphase[k]= cexpf(I*phase);
     }
-#pragma omp parallel for
-    for(q=0;q<N/nnodes;q++){
-       x= q+inode*(N/nnodes);
+#pragma omp parallel for private(x,b1,b2,k,qubit2)
+    for(q=0;q<N/nranks;q++){
+       x= q+inode*(N/nranks);
        b1= ((x>>qubit1)&1ll);
        for(k=1;k<=nq;k++){
            qubit2=qubit1-k;
@@ -237,39 +240,54 @@ int main(int argc, char **argv){
    int64_t factor2[61]={0,0,0,0,0,  0,0,0,0,7, 7, 13, 11, 11, 17, 23, 23, 31, 29, 31, 53, 61, 89, 67, 67, 109, 103, 163, 197, 229, 239, 311, 281, 439, 463, 769, 521, 953, 941, 863, 1151, 1427, 1499, 1777, 2347, 2909, 3559, 4547, 4099, 6397, 6133, 8623, 8377, 11117, 12071, 14879, 20743, 21283, 23633, 30557, 37571};
 
    MPI_Init(&argc, &argv);
-   MPI_Comm_size(MPI_COMM_WORLD,(int*)&nnodes);
+   MPI_Comm_size(MPI_COMM_WORLD,(int*)&nranks);
    MPI_Comm_rank(MPI_COMM_WORLD,(int*)&inode);
+#ifdef _OPENMP
+   nthreads = (int64_t)omp_get_max_threads();
+#else
+   nthreads = 1ll;
+#endif
 
    NODEBITS=0;
    aux=1;
-   while(aux<nnodes){ aux= (aux<<1); NODEBITS= NODEBITS+1; }
-   if(aux!=nnodes){
+   while(aux<nranks){ aux= (aux<<1); NODEBITS= NODEBITS+1; }
+   if(aux!=nranks){
       fprintf(stderr,"ERROR: Number of nodes has to be a power of 2\n");
       exit(1);
    }
    if(inode==0){
        printf("QuanSimBench version %s\n",VERSION);
-       printf("Ranks: %lu\n\n", nnodes);
-       printf("Qubits      Factors    Probability         Time    States/s  States/s/rank  Pass\n");
+#ifdef QSB_MPI_STUBS
+       printf("MPI ranks: N/A\n");
+#else
+       printf("MPI ranks: %lu\n", nranks);
+#endif
+#ifdef _OPENMP
+       printf("OpenMP threads per rank: %lu\n", nthreads);
+#else
+       printf("OpenMP threads per rank: N/A\n");
+#endif
+       printf("\n");
+       printf("Qubits      Factors    Probability         Time    States/s  States/s/thr  Pass\n");
    }
 
    // iterate over number of qubits
    for(QUBITS=9; QUBITS<=MAXQUBITS; QUBITS++){ // 9 is minimum qubits for this test
 
        N= (1ll<<QUBITS); // state vector size
-       if( N<nnodes) goto next;  // too many nodes for small N
+       if( N<nranks) goto next;  // too many nodes for small N
 
        BUFFERSIZE= (1ll<<18);  // number of complex numbers used in chunk of communication
        NBUFFERS=4; // must be a power of 2 to simplify code, and <=1024 (which is too large)
-       if( NBUFFERS> N/nnodes/BUFFERSIZE ) NBUFFERS= N/nnodes/BUFFERSIZE;
+       if( NBUFFERS> N/nranks/BUFFERSIZE ) NBUFFERS= N/nranks/BUFFERSIZE;
        if( NBUFFERS<1 ) NBUFFERS=1;
-       if(BUFFERSIZE>N/nnodes/NBUFFERS) BUFFERSIZE=N/nnodes/NBUFFERS;
-       if( N%(nnodes*BUFFERSIZE*NBUFFERS)!=0){
-          fprintf(stderr,"ERROR: nnodes*BUFFERSIZE must divide N %lu \n",nnodes*BUFFERSIZE*NBUFFERS);
+       if(BUFFERSIZE>N/nranks/NBUFFERS) BUFFERSIZE=N/nranks/NBUFFERS;
+       if( N%(nranks*BUFFERSIZE*NBUFFERS)!=0){
+          fprintf(stderr,"ERROR: nranks*BUFFERSIZE must divide N %lu \n",nranks*BUFFERSIZE*NBUFFERS);
           goto fin;
        }
 
-       c=realloc(c, (N/nnodes)*sizeof(complex float) );             // re-allocate double float amplitudes
+       c=realloc(c, (N/nranks)*sizeof(complex float) );             // re-allocate double float amplitudes
        if( c==NULL ){
           if(inode==0) fprintf(stderr,"Ending due to allocation error\n");
           exit(1);
@@ -288,10 +306,10 @@ int main(int argc, char **argv){
 
        // initial state is | z, 2^z mod n > collapsed by a measurement of second register with outcome 1
        s0=0.0, s=0.0; // for normalization
-       x= inode*(N/nnodes);
+       x= inode*(N/nranks);
        l= powmod(2,x,n); // l is the value of (2^x mod n)
-       for(z=0;z<N/nnodes;z++){
-           x= z+inode*(N/nnodes);
+       for(z=0;z<N/nranks;z++){
+           x= z+inode*(N/nranks);
            c[z]=0.0;
            if (l==1) c[z]=1.0;
            s0=s0+ cabsf(c[z]*conjf(c[z]));
@@ -299,7 +317,7 @@ int main(int argc, char **argv){
        }
        MPI_Allreduce(&s0,&s, 1,MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
        s=1.0/sqrt(s);
-       for(z=0;z<N/nnodes;z++) c[z]= c[z]*s; // normalize initial condition
+       for(z=0;z<N/nranks;z++) c[z]= c[z]*s; // normalize initial condition
 
        nphase= 1+log2(1.0*QUBITS);   // number of phases each step of Approximate Quantum Fourier Transform
        clock_gettime(CLOCK_REALTIME,&tim0);  // only time AQFT
@@ -318,22 +336,22 @@ int main(int argc, char **argv){
 
        clock_gettime(CLOCK_REALTIME,&tim1);
        timeqft= 1.0*(tim1.tv_sec-tim0.tv_sec)+1.e-9*(tim1.tv_nsec-tim0.tv_nsec); // time of QFT in seconds
-       timeperstate= timeqft*nnodes/N/numstates;
+       timeperstate= (N*numstates)/timeqft;
 
        // compute probability that the solution is a multiple of peakspacing
        prob0=0.0;
        npeaks= mulperiod;
-       for(peaknumber= inode*npeaks/nnodes; peaknumber<=(inode+1)*npeaks/nnodes; peaknumber++){  // note that this lists << N peaks
+       for(peaknumber= inode*npeaks/nranks; peaknumber<=(inode+1)*npeaks/nranks; peaknumber++){  // note that this lists << N peaks
            if(peaknumber>0) {
                predictedx= peaknumber*peakspacing +0.5; // state number x where a peak may occur, add 0.5 to round to nearest
-               z= predictedx -N/nnodes*inode;           // convert to int and reduce to interval in this node
-               if(z>=0 && z<N/nnodes) prob0=prob0+cabsf(c[z]*conjf(c[z]));  // resulting area under theoretical peaknumber
+               z= predictedx -N/nranks*inode;           // convert to int and reduce to interval in this node
+               if(z>=0 && z<N/nranks) prob0=prob0+cabsf(c[z]*conjf(c[z]));  // resulting area under theoretical peaknumber
            }
        }
        MPI_Allreduce(&prob0,&prob, 1,MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
        if(inode==0){
            sprintf(texfactors,"%lu*%lu",factor1[QUBITS], factor2[QUBITS]);
-           printf("%6lu %12s  %13.6f   %10.4e  %10.4e     %10.4e  %4s\n", QUBITS, texfactors, prob, timeqft,  1.0/timeperstate*nnodes,   1.0/timeperstate, prob > 0.5 ? "yes" : "no");
+           printf("%6lu %12s  %13.6f   %10.4e  %10.4e    %10.4e  %4s\n", QUBITS, texfactors, prob, timeqft, timeperstate, timeperstate/(nranks*nthreads), prob > 0.5 ? "yes" : "no");
            fflush(stdout);
        }
 next:  z=0; // dummy

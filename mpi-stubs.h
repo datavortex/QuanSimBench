@@ -13,6 +13,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define QSB_MPI_STUBS 1
+
 #ifdef __GNUC__
 # define UNUSED(x) UNUSED_ ## x __attribute__((__unused__))
 #else
