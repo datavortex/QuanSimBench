@@ -124,11 +124,11 @@ void SWAP(int64_t qubit1, int64_t qubit2){  // SWAP between qubit1 and qubit2, q
 #pragma omp parallel for private(x,y,b1,b2,aux)
         for(q=0;q<N/nranks;q++){
            x= q+ 0*inode*(N/nranks);  // 0* because affects only lower qubits
-           b1= (x>>qubit1)&1ll;
-           b2= (x>>qubit2)&1ll;
-           if(b1!=b2){
-              y= (x^(1ll<<qubit1))^(1ll<<qubit2);
-              if(y>x){ // to avoid overwriting previously computed
+           y= (x^(1ll<<qubit1))^(1ll<<qubit2);
+           if(y>x){ // to avoid overwriting previously computed
+              b1= (x>>qubit1)&1ll;
+              b2= (x>>qubit2)&1ll;
+              if(b1!=b2){
                  aux= c[x];
                  c[x]=c[y];
                  c[y]=aux;
