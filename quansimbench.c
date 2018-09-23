@@ -232,6 +232,7 @@ int main(int argc, char **argv){
    struct timespec tim0,tim1;
    double timeperstate,timeqft,s,s0,prob,prob0,peakspacing; // don't change to float
    char texfactors[32];
+   int retval = EXIT_FAILURE;  // assume failure
 
    // largest integers that can be factored with Shor's algoritm with register size 'qubits'
    // n[qubits]= factor1[qubits]*factor2[qubits]   2^qubits <= n^2 < 2^{qubits+1}, qubits>=9
@@ -252,8 +253,8 @@ int main(int argc, char **argv){
    aux=1;
    while(aux<nranks){ aux= (aux<<1); NODEBITS= NODEBITS+1; }
    if(aux!=nranks){
-      fprintf(stderr,"ERROR: Number of nodes has to be a power of 2\n");
-      exit(1);
+      if(inode==0) fprintf(stderr,"ERROR: Number of nodes has to be a power of 2\n");
+      goto fin;
    }
    if(inode==0){
        printf("QuanSimBench version %s\n",VERSION);
@@ -275,7 +276,7 @@ int main(int argc, char **argv){
    for(QUBITS=9; QUBITS<=MAXQUBITS; QUBITS++){ // 9 is minimum qubits for this test
 
        N= (1ll<<QUBITS); // state vector size
-       if( N<nranks) goto next;  // too many nodes for small N
+       if( N<nranks) continue;  // too many nodes for small N
 
        BUFFERSIZE= (1ll<<18);  // number of complex numbers used in chunk of communication
        NBUFFERS=4; // must be a power of 2 to simplify code, and <=1024 (which is too large)
@@ -283,14 +284,13 @@ int main(int argc, char **argv){
        if( NBUFFERS<1 ) NBUFFERS=1;
        if(BUFFERSIZE>N/nranks/NBUFFERS) BUFFERSIZE=N/nranks/NBUFFERS;
        if( N%(nranks*BUFFERSIZE*NBUFFERS)!=0){
-          fprintf(stderr,"ERROR: nranks*BUFFERSIZE must divide N %lu \n",nranks*BUFFERSIZE*NBUFFERS);
+          if(inode==0) fprintf(stderr,"ERROR: nranks*BUFFERSIZE must divide N %lu \n",nranks*BUFFERSIZE*NBUFFERS);
           goto fin;
        }
 
        c=realloc(c, (N/nranks)*sizeof(complex float) );             // re-allocate double float amplitudes
        if( c==NULL ){
           if(inode==0) fprintf(stderr,"Ending due to allocation error\n");
-          exit(1);
           goto fin;
        }
        buffer=realloc(buffer, NBUFFERS*BUFFERSIZE*sizeof(complex float));    // for communication
@@ -354,10 +354,10 @@ int main(int argc, char **argv){
            printf("%6lu %12s  %13.6f   %10.4e  %10.4e    %10.4e  %4s\n", QUBITS, texfactors, prob, timeqft, timeperstate, timeperstate/(nranks*nthreads), prob > 0.5 ? "yes" : "no");
            fflush(stdout);
        }
-next:  z=0; // dummy
    }
+   retval = EXIT_SUCCESS;
 
 fin:   MPI_Finalize();
-   return 0;
+   return retval;
 }
 ////////////////////////////////////////////////////////////////////////////////
