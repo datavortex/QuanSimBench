@@ -197,17 +197,19 @@ void CPN(int64_t qubit1, int64_t nq){  // PHASE between control qubit1 and qubit
     }
 #pragma omp parallel for private(x,b1,b2,k,qubit2)
     for(q=0;q<N/nranks;q++){
-       x= q+inode*(N/nranks);
-       b1= ((x>>qubit1)&1ll);
-       for(k=1;k<=nq;k++){
-           qubit2=qubit1-k;
-           if(qubit2>=0){
-              b2= ((x>>qubit2)&1ll);
-              if( b1 && b2 ){
-                 c[q]=c[q]*expphase[k];
-              }
-           }
-       }
+        for(k=1;k<=nq;k++){
+          qubit2=qubit1-k;
+          if(qubit2>=0)
+              continue;
+          x= q+inode*(N/nranks);
+          b1= ((x>>qubit1)&1ll);
+          if( !b1 )
+              continue;
+          b2= ((x>>qubit2)&1ll);
+          if( !b2 )
+              continue;
+          c[q]=c[q]*expphase[k];
+        }
     }
     return;
 }
