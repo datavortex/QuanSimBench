@@ -34,7 +34,7 @@
 #endif
 
 float complex *c, *buffer; // quantum amplitudes
-int64_t QUBITS,N,BUFFERSIZE,NBUFFERS,NODEBITS,nranks,nthreads,inode;
+int64_t QUBITS,N,BUFFERSIZE,NBUFFERS,NODEBITS,nranks,inode;
 /////////////////////////////////////////////////////////////////////////////
 //  Quantum numstates addressing example with 4 nodes.
 //  1- The QUBITS-NODEBITS least significant bits can be swapped within each node.
@@ -243,11 +243,6 @@ int main(int argc, char **argv){
    MPI_Init(&argc, &argv);
    MPI_Comm_size(MPI_COMM_WORLD,(int*)&nranks);
    MPI_Comm_rank(MPI_COMM_WORLD,(int*)&inode);
-#ifdef _OPENMP
-   nthreads = (int64_t)omp_get_max_threads();
-#else
-   nthreads = 1ll;
-#endif
 
    NODEBITS=0;
    aux=1;
@@ -264,19 +259,19 @@ int main(int argc, char **argv){
        printf("MPI ranks: %lu\n", nranks);
 #endif
 #ifdef _OPENMP
-       printf("OpenMP threads per rank: %lu\n", nthreads);
+       printf("OpenMP threads per rank: %d\n", omp_get_max_threads());
 #else
        printf("OpenMP threads per rank: N/A\n");
 #endif
        printf("\n");
-       printf("Qubits      Factors    Probability         Time    States/s  States/s/thr  Pass\n");
+       printf("Qubits      Factors    Probability         Time    States/s  Pass\n");
    }
 
    // iterate over number of qubits
    for(QUBITS=9; QUBITS<=MAXQUBITS; QUBITS++){ // 9 is minimum qubits for this test
 
        N= (1ll<<QUBITS); // state vector size
-       if( N<nranks) continue;  // too many nodes for small N
+       if( N<nranks ) continue;  // too many nodes for small N
 
        BUFFERSIZE= (1ll<<18);  // number of complex numbers used in chunk of communication
        NBUFFERS=4; // must be a power of 2 to simplify code, and <=1024 (which is too large)
@@ -351,7 +346,7 @@ int main(int argc, char **argv){
        MPI_Allreduce(&prob0,&prob, 1,MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
        if(inode==0){
            sprintf(texfactors,"%lu*%lu",factor1[QUBITS], factor2[QUBITS]);
-           printf("%6lu %12s  %13.6f   %10.4e  %10.4e    %10.4e  %4s\n", QUBITS, texfactors, prob, timeqft, timeperstate, timeperstate/(nranks*nthreads), prob > 0.5 ? "yes" : "no");
+           printf("%6lu %12s  %13.6f   %10.4e  %10.4e  %4s\n", QUBITS, texfactors, prob, timeqft, timeperstate, prob > 0.5 ? "yes" : "no");
            fflush(stdout);
        }
    }
