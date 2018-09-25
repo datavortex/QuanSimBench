@@ -22,6 +22,7 @@
 #include <math.h>
 #include <complex.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include <time.h>
 #include <mpi.h>
 #ifdef _OPENMP
@@ -281,7 +282,7 @@ int main(int argc, char **argv){
        if( NBUFFERS<1 ) NBUFFERS=1;
        if(BUFFERSIZE>N/nranks/NBUFFERS) BUFFERSIZE=N/nranks/NBUFFERS;
        if( N%(nranks*BUFFERSIZE*NBUFFERS)!=0){
-          if(inode==0) fprintf(stderr,"ERROR: nranks*BUFFERSIZE must divide N %lu \n",nranks*BUFFERSIZE*NBUFFERS);
+          if(inode==0) fprintf(stderr,"ERROR: nranks*BUFFERSIZE must divide N %" PRId64 "\n",nranks*BUFFERSIZE*NBUFFERS);
           goto fin;
        }
 
@@ -347,8 +348,8 @@ int main(int argc, char **argv){
        }
        MPI_Allreduce(&prob0,&prob, 1,MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
        if(inode==0){
-           sprintf(texfactors,"%lu*%lu",factor1[QUBITS], factor2[QUBITS]);
-           printf("%6lu %12s  %13.6f   %10.4e  %10.4e  %4s\n", QUBITS, texfactors, prob, timeqft, timeperstate, prob > 0.5 ? "yes" : "no");
+           sprintf(texfactors,"%" PRId64 "*%" PRId64,factor1[QUBITS], factor2[QUBITS]);
+           printf("%6" PRId64 " %12s  %13.6f   %10.4e  %10.4e  %4s\n", QUBITS, texfactors, prob, timeqft, timeperstate, prob > 0.5 ? "yes" : "no");
            fflush(stdout);
        }
    }
