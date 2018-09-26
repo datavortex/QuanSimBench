@@ -1,8 +1,8 @@
 /////////////////////////////////////////////////////////////////////////////
 //  Quantum Factorization Simulation as a Benchmark for HPC
 //  Verifies that the area under the peaks of the Quantum Fourier Transform
-//  of delta(2^x mod n,1) is larger than 1/2, where n=p*q is the
-//  largest integer that satisfies n^2<=2^QUBITS<2n^2 and maximises (p-1)*(q-1), p<q.
+//  of delta(2^x mod n,1) is larger than 1/2, where n=p*q is an
+//  integer that satisfies n^2<=2^QUBITS<2n^2 and maximizes the period r of 2^x mod n with r even and 2^(r/2)~=-1 mod n.
 //  It is a simplification of Shor's factorization algorithm
 //  (c) Santiago Ignacio Betelu, Denton 2018
 //  Thanks Datavortex Technologies for providing the hardware and research support for developing this benchmark.
