@@ -34,7 +34,7 @@
 # define MAXQUBITS 60
 #endif
 
-float complex *c, *buffer; // quantum amplitudes
+float complex *c=NULL, *buffer=NULL; // quantum amplitudes
 int64_t QUBITS,N,BUFFERSIZE,NBUFFERS,NODEBITS,nranks,inode;
 /////////////////////////////////////////////////////////////////////////////
 //  Quantum numstates addressing example with 4 nodes.
@@ -280,18 +280,22 @@ int main(int argc, char **argv){
        NBUFFERS=4; // must be a power of 2 to simplify code, and <=1024 (which is too large)
        if( NBUFFERS> N/nranks/BUFFERSIZE ) NBUFFERS= N/nranks/BUFFERSIZE;
        if( NBUFFERS<1 ) NBUFFERS=1;
-       if(BUFFERSIZE>N/nranks/NBUFFERS) BUFFERSIZE=N/nranks/NBUFFERS;
+       if( BUFFERSIZE>N/nranks/NBUFFERS ) BUFFERSIZE=N/nranks/NBUFFERS;
        if( N%(nranks*BUFFERSIZE*NBUFFERS)!=0){
           if(inode==0) fprintf(stderr,"ERROR: nranks*BUFFERSIZE must divide N %" PRId64 "\n",nranks*BUFFERSIZE*NBUFFERS);
           goto fin;
        }
 
-       c=realloc(c, (N/nranks)*sizeof(complex float) );             // re-allocate double float amplitudes
-       if( c==NULL ){
+       free(c);
+       if( posix_memalign((void *)&c, sizeof(complex float), (N/nranks)*sizeof(complex float)) != 0 ){     // re-allocate double float amplitudes
           if(inode==0) fprintf(stderr,"Ending due to allocation error\n");
           goto fin;
        }
-       buffer=realloc(buffer, NBUFFERS*BUFFERSIZE*sizeof(complex float));    // for communication
+       free(buffer);
+       if( posix_memalign((void *)&buffer, sizeof(complex float), NBUFFERS*BUFFERSIZE*sizeof(complex float)) != 0 ){    // for communication
+          if(inode==0) fprintf(stderr,"Ending due to allocation error\n");
+          goto fin;
+       }
 
        n= factor1[QUBITS]*factor2[QUBITS]; // number to factor
        mulperiod= (factor1[QUBITS]-1)*(factor2[QUBITS]-1); // Euler totient function is multiple of period of (2^x mod n)
