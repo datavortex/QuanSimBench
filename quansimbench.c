@@ -358,7 +358,10 @@ int main(int argc, char **argv){
    }
    retval = EXIT_SUCCESS;
 
-fin:   MPI_Finalize();
+fin:
+   free(buffer);
+   free(c);
+   MPI_Finalize();
    return retval;
 }
 ////////////////////////////////////////////////////////////////////////////////
