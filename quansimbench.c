@@ -199,7 +199,7 @@ void CPN(int64_t qubit1, int64_t nq){  // PHASE between control qubit1 and qubit
     float complex expphase[QUBITS+1];
     //
     for(k=1;k<=nq;k++){
-        phase= M_PI*powf(2.0,-k);
+        phase= M_PI*powf(2.0,-(float)k);
         expphase[k]= cexpf(I*phase);
     }
 #pragma omp parallel for private(x,b1,b2,k,qubit2)
@@ -254,8 +254,8 @@ int main(int argc, char **argv){
    MPI_Comm_rank(MPI_COMM_WORLD,(int*)&inode);
 
    NODEBITS=0;
-   aux=1;
-   while(aux<nranks){ aux= (aux<<1); NODEBITS= NODEBITS+1; }
+   for(aux=1; aux<nranks; aux<<=1)
+     NODEBITS++;
    if(aux!=nranks){
       if(inode==0) fprintf(stderr,"ERROR: Number of nodes has to be a power of 2\n");
       goto fin;
