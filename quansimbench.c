@@ -315,6 +315,7 @@ int main(int argc, char **argv){
        s0=0.0, s=0.0; // for normalization
        x= inode*(N/nranks);
        l= powmod(2,x,n); // l is the value of (2^x mod n)
+#pragma omp parallel for
        for(z=0;z<N/nranks;z++){
            c[z]=0.0;
            if (l==1) c[z]=1.0;
