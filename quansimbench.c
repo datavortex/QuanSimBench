@@ -30,6 +30,12 @@
 #endif
 
 #define VERSION "1.0"
+#ifndef MINQUBITS
+# define MINQUBITS 9
+#endif
+#if MINQUBITS < 9
+# error MINQUBITS must be at least 9
+#endif
 #ifndef MAXQUBITS
 # define MAXQUBITS 60
 #endif
@@ -271,8 +277,7 @@ int main(int argc, char **argv){
    }
 
    // iterate over number of qubits
-   for(QUBITS=9; QUBITS<=MAXQUBITS; QUBITS++){ // 9 is minimum qubits for this test
-
+   for(QUBITS=MINQUBITS; QUBITS<=MAXQUBITS; QUBITS++){
        N= (1ll<<QUBITS); // state vector size
        if( N<nranks ) continue;  // too many nodes for small N
 
