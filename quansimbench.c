@@ -273,7 +273,7 @@ int main(int argc, char **argv){
        printf("OpenMP threads per rank: N/A\n");
 #endif
        printf("\n");
-       printf("Qubits      Factors    Probability         Time    States/s  Pass\n");
+       printf("Qubits      Factors    Probability         Time    Coeffs/s  Pass\n");
    }
 
    // iterate over number of qubits
