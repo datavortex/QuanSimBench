@@ -40,7 +40,7 @@
 # define MAXQUBITS 60
 #endif
 
-static complex float *c=NULL, *buffer=NULL, *expphase=NULL; // quantum amplitudes
+static complex float *c=NULL, *buffer=NULL; // quantum amplitudes
 static int64_t QUBITS,N,BUFFERSIZE,NBUFFERS,NODEBITS,nranks,inode;
 /////////////////////////////////////////////////////////////////////////////
 //  Quantum numstates addressing example with 4 nodes.
@@ -193,7 +193,7 @@ static void SWAP(int64_t qubit1, int64_t qubit2){  // SWAP between qubit1 and qu
     return;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
-static void init_expphase(int64_t nq){   // initialize the phase exponentials
+static void init_expphase(int64_t nq,complex float *expphase){   // initialize the phase exponentials
     float phase;
     int64_t k;
 
@@ -203,7 +203,7 @@ static void init_expphase(int64_t nq){   // initialize the phase exponentials
     }
 }
 
-static void CPN(int64_t qubit1, int64_t nq){  // PHASE between control qubit1 and qubit+1,2,3,..nq, phase= pi/2^1, pi/2^2,...
+static void CPN(int64_t qubit1, int64_t nq, complex float *expphase){  // PHASE between control qubit1 and qubit+1,2,3,..nq, phase= pi/2^1, pi/2^2,...
     int64_t x,q,b1,b2,k,qubit2;
 #pragma omp parallel for private(x,b1,b2,k,qubit2)
     for(q=0;q<N/nranks;q++){
@@ -244,6 +244,7 @@ int main(int argc, char **argv){
    struct timespec tim0,tim1;
    double timeperstate,timeqft,s,s0,prob,prob0,peakspacing; // don't change to float
    char texfactors[32];
+   complex float *expphase=NULL;
    int retval = EXIT_FAILURE;  // assume failure
 
    // largest integers that can be factored with Shor's algoritm with register size 'qubits'
@@ -336,10 +337,10 @@ int main(int argc, char **argv){
        clock_gettime(CLOCK_REALTIME,&tim0);  // only time AQFT
        // the Approximate Quantum Fourier Transform
        numstates=0;
-       init_expphase(nphase);
+       init_expphase(nphase,expphase);
        for(q=QUBITS-1;q>=0; q--){
             H(q);
-            CPN(q,nphase); // all nphase phases folded into a single call
+            CPN(q,nphase,expphase); // all nphase phases folded into a single call
             numstates=numstates+1+min(q,nphase);
        }
        for(q=0;q<QUBITS/2;q++){
