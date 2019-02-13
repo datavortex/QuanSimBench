@@ -40,8 +40,8 @@
 # define MAXQUBITS 60
 #endif
 
-float complex *c=NULL, *buffer=NULL; // quantum amplitudes
-int64_t QUBITS,N,BUFFERSIZE,NBUFFERS,NODEBITS,nranks,inode;
+static complex float *c=NULL, *buffer=NULL, *expphase=NULL; // quantum amplitudes
+static int64_t QUBITS,N,BUFFERSIZE,NBUFFERS,NODEBITS,nranks,inode;
 /////////////////////////////////////////////////////////////////////////////
 //  Quantum numstates addressing example with 4 nodes.
 //  1- The QUBITS-NODEBITS least significant bits can be swapped within each node.
@@ -69,10 +69,10 @@ int64_t QUBITS,N,BUFFERSIZE,NBUFFERS,NODEBITS,nranks,inode;
 //////////////////////////////////////////////////////////////////////////////
 //  H= | 1  1 |
 //     | 1 -1 | /sqrt(2)
-void H(int64_t qubit){  // Hadamard gate acting on qubit
+static void H(int64_t qubit){  // Hadamard gate acting on qubit
     int64_t x,y,mask1,mask2,q,chunk;
     int node,b,tag;
-    float complex aux;
+    complex float aux;
     static MPI_Request reqsend[1024], reqrecv[1024];
     //
     if(qubit< QUBITS-NODEBITS){
@@ -116,10 +116,10 @@ void H(int64_t qubit){  // Hadamard gate acting on qubit
     return;
 }
 //////////////////////////////////////////////////////////////////////////////
-void SWAP(int64_t qubit1, int64_t qubit2){  // SWAP between qubit1 and qubit2, qubit1!=quibit2
+static void SWAP(int64_t qubit1, int64_t qubit2){  // SWAP between qubit1 and qubit2, qubit1!=quibit2
     int64_t x,y,b1,b2,chunk,q;
     int node,b,tag;
-    float complex aux;
+    complex float aux;
     static MPI_Request reqsend[1024], reqrecv[1024];
     //
     if(qubit1>qubit2){ // sort qubit1 < qubit2
@@ -193,15 +193,18 @@ void SWAP(int64_t qubit1, int64_t qubit2){  // SWAP between qubit1 and qubit2, q
     return;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
-void CPN(int64_t qubit1, int64_t nq){  // PHASE between control qubit1 and qubit+1,2,3,..nq, phase= pi/2^1, pi/2^2,...
-    int64_t x,q,b1,b2,k,qubit2;
+static void init_expphase(int64_t nq){   // initialize the phase exponentials
     float phase;
-    float complex expphase[QUBITS+1];
-    //
+    int64_t k;
+
     for(k=1;k<=nq;k++){
         phase= M_PI*powf(2.0,-(float)k);
         expphase[k]= cexpf(I*phase);
     }
+}
+
+static void CPN(int64_t qubit1, int64_t nq){  // PHASE between control qubit1 and qubit+1,2,3,..nq, phase= pi/2^1, pi/2^2,...
+    int64_t x,q,b1,b2,k,qubit2;
 #pragma omp parallel for private(x,b1,b2,k,qubit2)
     for(q=0;q<N/nranks;q++){
        x= q+inode*(N/nranks);
@@ -221,12 +224,12 @@ void CPN(int64_t qubit1, int64_t nq){  // PHASE between control qubit1 and qubit
     return;
 }
 //////////////////////////////////////////////////////////////////////////////
-int64_t min(int64_t x, int64_t y){
+static int64_t min(int64_t x, int64_t y){
    if(x<y) return(x);
    else return(y);
 }
 //  (a^b) mod n
-int64_t powmod(int64_t a, int64_t b, int64_t n){
+static int64_t powmod(int64_t a, int64_t b, int64_t n){
     int64_t xq=1,yq=a; // avoid overflow of intermediate results
     while(b>0){
         if(b&1ll) xq=(xq*yq)%n;
@@ -290,7 +293,11 @@ int main(int argc, char **argv){
           if(inode==0) fprintf(stderr,"ERROR: nranks*BUFFERSIZE must divide N %" PRId64 "\n",nranks*BUFFERSIZE*NBUFFERS);
           goto fin;
        }
-
+       free(expphase);
+       if( posix_memalign((void *)&expphase, sizeof(complex float), (QUBITS+1)*sizeof(complex float)) != 0 ){     // re-allocate phase exponentials
+          if(inode==0) fprintf(stderr,"Ending due to allocation error\n");
+          goto fin;
+       }
        free(c);
        if( posix_memalign((void *)&c, sizeof(complex float), (N/nranks)*sizeof(complex float)) != 0 ){     // re-allocate double float amplitudes
           if(inode==0) fprintf(stderr,"Ending due to allocation error\n");
@@ -325,10 +332,11 @@ int main(int argc, char **argv){
        s=1.0/sqrt(s);
        for(z=0;z<N/nranks;z++) c[z]= c[z]*s; // normalize initial condition
 
-       nphase= 1+log2(1.0*QUBITS);   // number of phases each step of Approximate Quantum Fourier Transform
+       nphase= 1+log2(1.0*QUBITS);   // number of phases in each step of Approximate Quantum Fourier Transform
        clock_gettime(CLOCK_REALTIME,&tim0);  // only time AQFT
        // the Approximate Quantum Fourier Transform
        numstates=0;
+       init_expphase(nphase);
        for(q=QUBITS-1;q>=0; q--){
             H(q);
             CPN(q,nphase); // all nphase phases folded into a single call
@@ -364,6 +372,7 @@ int main(int argc, char **argv){
    retval = EXIT_SUCCESS;
 
 fin:
+   free(expphase);
    free(buffer);
    free(c);
    MPI_Finalize();
