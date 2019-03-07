@@ -241,7 +241,7 @@ static int64_t powmod(int64_t a, int64_t b, int64_t n){
 }
 //////////////////////////////////////////////////////////////////////////////
 int main(int argc, char **argv){
-    int64_t x,aux,nphase,n,l,mulperiod,peaknumber,z,q,numstates,npeaks,predictedx;
+    int64_t x,aux,nphase,max_nphase,n,l,mulperiod,peaknumber,z,q,numstates,npeaks,predictedx;
     struct timespec tim0,tim1;
     double timeperstate,timeqft,s,s0,prob,prob0,peakspacing; // don't change to float
     char texfactors[32];
@@ -282,11 +282,12 @@ int main(int argc, char **argv){
     }
 
     // pre-initialize the phase exponentials
-    if( posix_memalign((void **)&expphase, sizeof(complex float), (MAXQUBITS+1)*sizeof(complex float)) != 0 ){     // re-allocate phase exponentials
+    max_nphase= 1 + (int64_t)log2(1.0*MAXQUBITS);
+    if( posix_memalign((void **)&expphase, sizeof(complex float), (1 + max_nphase)*sizeof(complex float)) != 0 ){     // re-allocate phase exponentials
         if(inode==0) fprintf(stderr,"Ending due to allocation error\n");
         goto fin;
     }
-    init_expphase(1 + (int64_t)log2(1.0*MAXQUBITS),expphase);
+    init_expphase(max_nphase,expphase);
 
     // iterate over number of qubits
     for(QUBITS=MINQUBITS; QUBITS<=MAXQUBITS; QUBITS++){
