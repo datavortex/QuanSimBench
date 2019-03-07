@@ -281,6 +281,13 @@ int main(int argc, char **argv){
         printf("Qubits      Factors    Probability         Time    Coeffs/s  Pass\n");
     }
 
+    // pre-initialize the phase exponentials
+    if( posix_memalign((void **)&expphase, sizeof(complex float), (MAXQUBITS+1)*sizeof(complex float)) != 0 ){     // re-allocate phase exponentials
+        if(inode==0) fprintf(stderr,"Ending due to allocation error\n");
+        goto fin;
+    }
+    init_expphase(1 + (int64_t)log2(1.0*MAXQUBITS),expphase);
+
     // iterate over number of qubits
     for(QUBITS=MINQUBITS; QUBITS<=MAXQUBITS; QUBITS++){
         N= (1ll<<QUBITS); // state vector size
@@ -293,11 +300,6 @@ int main(int argc, char **argv){
         if( BUFFERSIZE>N/nranks/NBUFFERS ) BUFFERSIZE=N/nranks/NBUFFERS;
         if( N%(nranks*BUFFERSIZE*NBUFFERS)!=0){
             if(inode==0) fprintf(stderr,"ERROR: nranks*BUFFERSIZE must divide N %" PRId64 "\n",nranks*BUFFERSIZE*NBUFFERS);
-            goto fin;
-        }
-        free(expphase);
-        if( posix_memalign((void **)&expphase, sizeof(complex float), (QUBITS+1)*sizeof(complex float)) != 0 ){     // re-allocate phase exponentials
-            if(inode==0) fprintf(stderr,"Ending due to allocation error\n");
             goto fin;
         }
         free(c);
@@ -338,7 +340,6 @@ int main(int argc, char **argv){
         clock_gettime(CLOCK_REALTIME,&tim0);  // only time AQFT
         // the Approximate Quantum Fourier Transform
         numstates=0;
-        init_expphase(nphase,expphase);
         for(q=QUBITS-1;q>=0; q--){
             H(q);
             CPN(q,nphase,expphase); // all nphase phases folded into a single call
