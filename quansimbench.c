@@ -240,10 +240,55 @@ static int64_t powmod(int64_t a, int64_t b, int64_t n){
     return(xq%n);
 }
 //////////////////////////////////////////////////////////////////////////////
+static void init_quantum_state(int64_t n){  // initial state is | z, 2^z mod n > collapsed by a measurement of second register with outcome 1
+    int64_t x,l,z,zp0,period;
+    double s0,s;   // don't change to float
+
+    // find the starting point and period of (2^x mod n)
+    x= inode*(N/nranks);
+    l= powmod(2,x,n); // l is the value of (2^x mod n)
+    zp0= -1;
+    period= 1;
+    for(z=0;z<N/nranks;z++){
+        if (l==1){
+            if (zp0==-1)
+                zp0= z;
+            else {
+                period=z-zp0;
+                break;
+            }
+        }
+        l= (2*l)%n;  // fast computation of (2^x mod n)
+    }
+
+    // set every period'th value to 1.0 and the rest to 0.0
+#pragma omp parallel for private(z)
+    for(z=0;z<N/nranks;z++){
+        c[z]=0.0;
+    }
+#pragma omp parallel for private(z) firstprivate(zp0,period)
+    for(z=zp0;z<N/nranks;z+=period){
+        c[z]=1.0;
+    }
+
+    // normalize the initial condition
+    s0=0.0, s=0.0; // for normalization
+#pragma omp parallel for private(z) reduction(+:s0)
+    for(z=0;z<N/nranks;z++){
+        s0=s0+ cabsf(c[z]*conjf(c[z]));
+    }
+    MPI_Allreduce(&s0,&s, 1,MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    s=1.0/sqrt(s);
+#pragma omp parallel for private(z)
+    for(z=0;z<N/nranks;z++){
+        c[z]= c[z]*s;
+    }
+}
+
 int main(int argc, char **argv){
-    int64_t x,aux,nphase,max_nphase,n,l,mulperiod,peaknumber,z,q,numstates,npeaks,predictedx;
+    int64_t aux,nphase,max_nphase,n,mulperiod,peaknumber,z,q,numstates,npeaks,predictedx;
     struct timespec tim0,tim1;
-    double timeperstate,timeqft,s,s0,prob,prob0,peakspacing; // don't change to float
+    double timeperstate,timeqft,prob,prob0,peakspacing; // don't change to float
     char texfactors[32];
     complex float *expphase=NULL;
     int retval = EXIT_FAILURE;  // assume failure
@@ -323,20 +368,7 @@ int main(int argc, char **argv){
             goto fin;
         }
 
-        // initial state is | z, 2^z mod n > collapsed by a measurement of second register with outcome 1
-        s0=0.0, s=0.0; // for normalization
-        x= inode*(N/nranks);
-        l= powmod(2,x,n); // l is the value of (2^x mod n)
-        for(z=0;z<N/nranks;z++){
-            c[z]=0.0;
-            if (l==1) c[z]=1.0;
-            s0=s0+ cabsf(c[z]*conjf(c[z]));
-            l= (2*l)%n;  // fast computation of (2^x mod n)
-        }
-        MPI_Allreduce(&s0,&s, 1,MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-        s=1.0/sqrt(s);
-        for(z=0;z<N/nranks;z++) c[z]= c[z]*s; // normalize initial condition
-
+        init_quantum_state(n);
         nphase= 1 + (int64_t)log2(1.0*QUBITS);   // number of phases in each step of Approximate Quantum Fourier Transform
         clock_gettime(CLOCK_REALTIME,&tim0);  // only time AQFT
         // the Approximate Quantum Fourier Transform
