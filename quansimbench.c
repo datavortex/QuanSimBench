@@ -5,7 +5,7 @@
 //  integer that satisfies n^2<=2^QUBITS<2n^2 and maximizes the period r of 2^x mod n with r even and 2^(r/2)~=-1 mod n.
 //  It is a simplification of Shor's factorization algorithm
 //  (c) Santiago Ignacio Betelu, Denton 2018
-//  Thanks Datavortex Technologies for providing the hardware and research support for developing this benchmark.
+//  Thanks Datavortex Technologies, UNT/HPC, TACC and LANL for providing the hardware and research support for developing this benchmark.
 //  mpicc -Ofast quansimbench.c -o quansimbench -lm -Wall
 //  sbatch quansimbench.batch
 //    _______                    ______ _       ______                    _
