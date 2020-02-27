@@ -37,10 +37,6 @@ The code contains comments with hints to optional addition of OpenMP as well.
 
 ## How to test the ability of your computer to simulate quantum AQFTs
 
-1. First run the benchmark until completion with increasing number of nodes/ranks until you get the largest number of States/s in the last row. That usually corresponds to the largest number of nodes/ranks you can run. If the program hangs, report the last visible row.
+1. First run the benchmark until completion with increasing number of nodes/ranks until you get the largest number of States/s in the last row. That usually corresponds to the largest number of nodes/ranks you can run. If the program hangs, read the last visible row.
 
 2. Verify that you get the "Pass=yes" result on all rows.
-
-3. Submit your results to [QuanSimBench Submission](https://docs.google.com/forms/d/e/1FAIpQLSeVwp_4FZJWyS5UsfBrtxq8PXkKJLoRvgHkpfTuOuJ-wcudiw/viewform?usp=sf_link).
-
-4. The results will soon be posted on our GitHub site.
