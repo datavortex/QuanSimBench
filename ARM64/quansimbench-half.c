@@ -9,7 +9,7 @@
 //  Thanks Datavortex Technologies for providing the hardware and research support for developing this benchmark.
 //  module load mpi/openmpi/arm-19.3/4.0.1
 //  mpicc -Ofast -mtune=native quansimbench-half.c -o quansimbench -lm -Wall
-//  squeue quansimbench.batch
+//  qsub quansimbench.sub
 //    _______                    ______ _       ______                    _
 //   (_______)                  / _____|_)     (____  \                  | |
 //    _    _  _   _ _____ ____ ( (____  _ ____  ____)  )_____ ____   ____| |__
