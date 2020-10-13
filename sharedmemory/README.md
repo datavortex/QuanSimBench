@@ -14,8 +14,9 @@
 - It just runs: no input or specialized knowledge from user.
 
 ## How to compile and run
+First decide how many physical cores your system has and then (assuming 32 physical cores):
 ```
-gcc -Ofast quansimbench-sharemem.c -o quansimbench -lm -Wall -fopenmp``
+gcc -Ofast quansimbench-sharemem.c -o quansimbench -lm -Wall -fopenmp
 export OMP_NUM_THREADS=32
 ./quansimbench
 ```
