@@ -14,6 +14,6 @@
 - It just runs: no input or specialized knowledge from user.
 
 ## How to compile and run
-``gcc -Ofast quansimbench-sharemem.c -o quansimbench -lm -Wall -fopenmp``
+```gcc -Ofast quansimbench-sharemem.c -o quansimbench -lm -Wall -fopenmp``
 export OMP_NUM_THREADS=32
-./quansimbench``
+./quansimbench```
